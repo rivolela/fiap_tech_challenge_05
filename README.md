@@ -43,13 +43,15 @@ python check_env.py
 fiap_tech_challenge_05/
 ├── notebooks/
 │   └── Análise Exploratória dos Dados.ipynb
-├── dados/
-│   ├── candidatos.csv
-│   ├── entrevistas.csv
-│   └── vagas.csv
+├── data/
+│   ├── applicants.json
+│   ├── prospects.json
+│   └── vagas.json
 ├── requirements.txt
 ├── setup.sh
 ├── check_env.py
+├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
@@ -75,14 +77,45 @@ source .venv/bin/activate
 jupyter notebook
 ```
 
-3. Abrir o notebook `notebooks/Análise Exploratória dos Dados.ipynb`
+3. Abrir o notebook [`notebooks/Análise Exploratória dos Dados.ipynb`](notebooks/Análise%20Exploratória%20dos%20Dados.ipynb)
 
 ## 📝 Dados
 
-Certifique-se de que os seguintes arquivos CSV estejam na pasta `dados/`:
-- `candidatos.csv`: Dados dos candidatos
-- `entrevistas.csv`: Dados das entrevistas
-- `vagas.csv`: Dados das vagas
+O projeto utiliza três datasets em formato JSON na pasta `data/`:
+- **applicants.json**: Dados dos candidatos ao processo seletivo
+- **prospects.json**: Dados das entrevistas e prospects
+- **vagas.json**: Informações sobre as vagas disponíveis
+
+### Estrutura dos Dados
+- **Candidatos**: Dataset principal com informações dos candidatos
+- **Entrevistas**: Dados das entrevistas realizadas  
+- **Vagas**: Informações sobre as vagas disponíveis
+
+## 🔍 Análise Exploratória
+
+O notebook principal inclui:
+- Importação e carregamento dos dados JSON
+- Análise da estrutura e qualidade dos dados
+- Estatísticas descritivas
+- Visualizações gráficas interativas
+- Identificação de padrões e outliers
+- Análise de correlações
+- Detecção de valores ausentes
+
+### Principais Insights
+- Análise de padrões nos dados de candidatos
+- Identificação de correlações entre variáveis
+- Detecção e tratamento de outliers
+- Distribuições das variáveis principais
+
+## 🔮 Próximos Passos
+
+1. **Limpeza de Dados**: Tratar valores ausentes e outliers identificados
+2. **Feature Engineering**: Criar novas variáveis baseadas nos insights
+3. **Modelagem**: Aplicar algoritmos de machine learning para:
+   - Previsão de sucesso de candidatos
+   - Matching entre candidatos e vagas
+   - Otimização do processo de recrutamento
 
 ## 🤝 Contribuição
 
@@ -94,8 +127,11 @@ Certifique-se de que os seguintes arquivos CSV estejam na pasta `dados/`:
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está sob a licença Apache 2.0. Veja o arquivo [`LICENSE`](LICENSE) para mais detalhes.
 
 ## 📞 Contato
 
-FIAP Tech Challenge 05 - [@rivolela](https://github.com/rivolela/fiap_tech_challenge_05) 
+FIAP Tech Challenge 05 - [@rivolela](https://github.com/rivolela/fiap_tech_challenge_05)
+
+---
+**Nota**: Certifique-se de que os arquivos JSON estejam disponíveis na pasta `data/` antes de executar o notebook de análise.
