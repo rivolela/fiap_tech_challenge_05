@@ -43,10 +43,38 @@ python check_env.py
 fiap_tech_challenge_05/
 ├── notebooks/
 │   └── Análise Exploratória dos Dados.ipynb
+│   └── analise_exploratoria.ipynb
 ├── data/
-│   ├── applicants.json
-│   ├── prospects.json
-│   └── vagas.json
+│   ├── raw/
+│   │   ├── applicants.json
+│   │   ├── prospects.json
+│   │   └── jobs.json
+│   ├── processed/
+│   │   ├── complete_processed_data.csv
+│   │   └── splits/
+│   │       ├── X_train.csv
+│   │       ├── X_test.csv
+│   │       └── ...
+│   ├── insights/
+│   └── visualizations/
+├── src/
+│   ├── data/
+│   │   ├── data_analysis.py
+│   │   └── download_data.py
+│   ├── features/
+│   │   ├── data_validation.py
+│   │   └── feature_engineering.py
+│   └── models/
+│       ├── train_simple.py
+│       ├── train_model.py
+│       └── mlflow_server.py
+├── models/
+│   ├── scoring_model.pkl
+│   └── feature_scaler.pkl
+├── docs/
+│   └── mlflow_guide.md
+├── scripts/
+│   └── check_env.py
 ├── requirements.txt
 ├── setup.sh
 ├── check_env.py
@@ -64,6 +92,7 @@ fiap_tech_challenge_05/
 - **plotly**: Gráficos interativos
 - **scikit-learn**: Machine learning
 - **jupyter**: Ambiente de notebooks
+- **mlflow**: Rastreamento e gerenciamento de experimentos de ML
 
 ## 📈 Como Usar
 
@@ -78,6 +107,50 @@ jupyter notebook
 ```
 
 3. Abrir o notebook [`notebooks/Análise Exploratória dos Dados.ipynb`](notebooks/Análise%20Exploratória%20dos%20Dados.ipynb)
+
+## 🤖 Sistema Híbrido de Scoring + Clustering
+
+### Pipeline Completo
+
+Execute o pipeline completo com MLflow usando:
+
+```bash
+./run_pipeline.sh
+```
+
+Opções disponíveis:
+- `--compare`: Treina e compara diferentes modelos
+- `--port 8080`: Altera a porta do servidor MLflow (padrão: 5001)
+- `--no-server`: Executa o pipeline sem iniciar o servidor MLflow
+
+### Treinamento do Modelo
+
+Para treinar modelos separadamente:
+
+```bash
+# Treinar o modelo RandomForest padrão
+python src/models/train_simple.py
+
+# Comparar diferentes modelos
+python src/models/train_simple.py --compare
+```
+
+### MLflow - Tracking de Experimentos
+
+Para gerenciar experimentos MLflow:
+
+```bash
+# Iniciar servidor MLflow
+python src/models/mlflow_server.py
+
+# Listar experimentos
+python src/models/mlflow_server.py --list
+
+# Excluir experimento
+python src/models/mlflow_server.py --delete "Decision-Scoring-Model"
+```
+
+Para mais detalhes sobre MLflow, consulte o guia em [docs/mlflow_guide.md](docs/mlflow_guide.md)
 
 ## 📝 Dados
 
@@ -110,12 +183,25 @@ O notebook principal inclui:
 
 ## 🔮 Próximos Passos
 
-1. **Limpeza de Dados**: Tratar valores ausentes e outliers identificados
-2. **Feature Engineering**: Criar novas variáveis baseadas nos insights
-3. **Modelagem**: Aplicar algoritmos de machine learning para:
-   - Previsão de sucesso de candidatos
-   - Matching entre candidatos e vagas
-   - Otimização do processo de recrutamento
+1. **Experimentação com MLflow**: 
+   - Otimização de hiperparâmetros
+   - Teste de diferentes algoritmos
+   - Comparação de métricas de desempenho
+
+2. **Implementação de Clustering**:
+   - Segmentação de candidatos por perfil
+   - Identificação de grupos de vagas similares
+   - Integração do clustering ao scoring model
+
+3. **Melhorias no Modelo**:
+   - Feature engineering avançado
+   - Implementação de técnicas de deep learning
+   - Validação cruzada para maior robustez
+
+4. **Produtivização**:
+   - API REST para servir o modelo
+   - Monitoramento contínuo de performance
+   - Pipeline de retreinamento automático
 
 ## 🤝 Contribuição
 
