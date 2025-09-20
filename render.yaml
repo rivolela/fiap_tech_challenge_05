@@ -8,6 +8,7 @@ services:
     plan: free
     branch: main
     dockerfilePath: ./Dockerfile
+    startCommand: python debug_paths.py && gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT src.api.scoring_api:app
     healthCheckPath: /health
     envVars:
       - key: PORT
