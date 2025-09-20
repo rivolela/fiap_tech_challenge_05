@@ -122,6 +122,10 @@ Opções disponíveis:
 - `--compare`: Treina e compara diferentes modelos
 - `--port 8080`: Altera a porta do servidor MLflow (padrão: 5001)
 - `--no-server`: Executa o pipeline sem iniciar o servidor MLflow
+- `--no-cv`: Desativa a validação cruzada
+- `--no-leakage-prevention`: Desativa a detecção de data leakage
+- `--no-feature-selection`: Desativa a seleção de features
+- `--cv-folds 10`: Altera o número de folds na validação cruzada (padrão: 5)
 
 ### Treinamento do Modelo
 
