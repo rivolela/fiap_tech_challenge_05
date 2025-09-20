@@ -85,4 +85,8 @@ fi
 
 # Iniciar o servidor
 echo "Iniciando API na porta $PORT..."
-uvicorn src.api.scoring_api:app --host 0.0.0.0 --port $PORT --reload
+# Garantir que o TextBlob está instalado para a funcionalidade de LLM
+pip install -r requirements.txt
+
+# Executar a API
+python -m src.api.scoring_api

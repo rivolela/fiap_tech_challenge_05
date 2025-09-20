@@ -94,6 +94,7 @@ class PredictionResponse(BaseModel):
     prediction: int = Field(..., description="Predição do modelo (0: não recomendado, 1: recomendado)")
     probability: float = Field(..., ge=0, le=1, description="Probabilidade da classe positiva")
     recommendation: str = Field(..., description="Recomendação textual baseada na predição")
+    comment: Optional[str] = Field(None, description="Comentário personalizado gerado por LLM")
     vaga_info: Optional[Dict[str, Any]] = Field(None, description="Informações sobre a vaga utilizada para predição")
     match_score: Optional[float] = Field(None, ge=0, le=1, description="Pontuação de compatibilidade candidato-vaga")
     
@@ -103,6 +104,7 @@ class PredictionResponse(BaseModel):
                 "prediction": 1,
                 "probability": 0.85,
                 "recommendation": "Recomendado",
+                "comment": "A análise indica boa adequação ao cargo de Desenvolvedor Python na área de tecnologia, nível pleno. O candidato possui 5.0 anos de experiência relevante e formação superior na área de tecnologia.",
                 "vaga_info": {
                     "id": "vaga-123",
                     "titulo": "Desenvolvedor Python",
