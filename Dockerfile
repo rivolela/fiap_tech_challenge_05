@@ -9,9 +9,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install uvicorn gunicorn
 
-# Copiar código fonte e modelos
-COPY src/ src/
-COPY models/ models/
+# Copiar todo o conteúdo do projeto
+COPY . .
 
 # Configurar variáveis de ambiente
 ENV PYTHONPATH=/opt/render/project/src
@@ -23,4 +22,4 @@ EXPOSE 8000
 # Iniciar API com Gunicorn para produção
 # Gunicorn é usado como servidor WSGI para produção
 # Uvicorn funciona como worker para lidar com ASGI
-CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT src.api.scoring_api:app
+CMD cd /opt/render/project/src && PYTHONPATH=/opt/render/project/src gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT src.api.scoring_api:app

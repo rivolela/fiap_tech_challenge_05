@@ -8,7 +8,6 @@ services:
     plan: free
     branch: main
     dockerfilePath: ./Dockerfile
-    buildCommand: echo "Docker build will use the Dockerfile directly"
     healthCheckPath: /health
     envVars:
       - key: PORT
