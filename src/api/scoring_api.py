@@ -144,7 +144,7 @@ async def log_requests(request, call_next):
     "/predict/", 
     response_model=PredictionResponse,
     status_code=status.HTTP_200_OK,
-    description="Realiza uma predição para um candidato"
+    description="Realiza uma predição para um candidato em relação a uma vaga"
 )
 async def predict(
     candidate: CandidateRequest,
@@ -152,6 +152,10 @@ async def predict(
 ):
     """
     Endpoint para predição individual de candidatos
+    
+    Este endpoint avalia a compatibilidade de um candidato com uma vaga específica.
+    Você pode fornecer informações sobre a vaga usando os campos vaga_id, vaga_titulo, 
+    vaga_area e vaga_senioridade para obter uma predição mais precisa.
     """
     try:
         logger.info(f"Processando predição para candidato: {candidate.dict()}")
@@ -166,11 +170,36 @@ async def predict(
         
         logger.info(f"Predição concluída: {prediction_result}")
         
+        # Preparar informações da vaga
+        vaga_info = None
+        match_score = None
+        
+        if any(candidate.dict().get(field) for field in ['vaga_id', 'vaga_titulo', 'vaga_area', 'vaga_senioridade']):
+            vaga_info = {
+                "id": candidate.vaga_id or "não especificado",
+                "titulo": candidate.vaga_titulo or "não especificado",
+                "area": candidate.vaga_area or "não especificada",
+                "senioridade": candidate.vaga_senioridade or "não especificada"
+            }
+            
+            # Calcular uma pontuação de compatibilidade
+            # Aqui estamos usando uma simplificação, em produção isso seria mais sofisticado
+            base_score = prediction_result["probability"]
+            
+            # Ajustar com base em fatores específicos da vaga
+            match_score = base_score
+            
+            # Se existe correspondência direta entre área de formação e vaga, aumentar o score
+            if 'match_area' in df.columns and df['match_area'].iloc[0] == 1:
+                match_score = min(1.0, match_score * 1.2)  # Aumento de 20%, máximo de 1.0
+        
         # Retornar resultado formatado
         return PredictionResponse(
             prediction=prediction_result["prediction"],
             probability=prediction_result["probability"],
-            recommendation=prediction_result["recommendation"]
+            recommendation=prediction_result["recommendation"],
+            vaga_info=vaga_info,
+            match_score=match_score
         )
     
     except Exception as e:
@@ -209,10 +238,32 @@ async def predict_batch(
             from src.api.model_loader import predict
             prediction_result = predict(df)
             
+            # Preparar informações da vaga
+            vaga_info = None
+            match_score = None
+            
+            if any(candidate.dict().get(field) for field in ['vaga_id', 'vaga_titulo', 'vaga_area', 'vaga_senioridade']):
+                vaga_info = {
+                    "id": candidate.vaga_id or "não especificado",
+                    "titulo": candidate.vaga_titulo or "não especificado",
+                    "area": candidate.vaga_area or "não especificada",
+                    "senioridade": candidate.vaga_senioridade or "não especificada"
+                }
+                
+                # Calcular uma pontuação de compatibilidade
+                base_score = prediction_result["probability"]
+                match_score = base_score
+                
+                # Se existe correspondência direta entre área de formação e vaga, aumentar o score
+                if 'match_area' in df.columns and df['match_area'].iloc[0] == 1:
+                    match_score = min(1.0, match_score * 1.2)  # Aumento de 20%, máximo de 1.0
+            
             results.append(PredictionResponse(
                 prediction=prediction_result["prediction"],
                 probability=prediction_result["probability"],
-                recommendation=prediction_result["recommendation"]
+                recommendation=prediction_result["recommendation"],
+                vaga_info=vaga_info,
+                match_score=match_score
             ))
         
         logger.info(f"Predição em lote concluída para {batch_size} candidatos")

@@ -29,6 +29,12 @@ class CandidateRequest(BaseModel):
     salario_anterior: Optional[float] = Field(None, ge=0, description="Salário anterior em reais")
     anos_estudo: Optional[int] = Field(None, ge=0, le=30, description="Anos de estudo formal")
     
+    # Campo para a vaga
+    vaga_id: Optional[str] = Field(None, description="ID da vaga a qual o candidato está concorrendo")
+    vaga_titulo: Optional[str] = Field(None, description="Título da vaga")
+    vaga_area: Optional[str] = Field(None, description="Área da vaga (ex: TI, Vendas, Marketing)")
+    vaga_senioridade: Optional[str] = Field(None, description="Nível de senioridade requerido")
+    
     # Campo para extensão com outras propriedades
     extra_data: Optional[Dict[str, Any]] = Field(None, description="Dados adicionais do candidato")
     
@@ -88,13 +94,22 @@ class PredictionResponse(BaseModel):
     prediction: int = Field(..., description="Predição do modelo (0: não recomendado, 1: recomendado)")
     probability: float = Field(..., ge=0, le=1, description="Probabilidade da classe positiva")
     recommendation: str = Field(..., description="Recomendação textual baseada na predição")
+    vaga_info: Optional[Dict[str, Any]] = Field(None, description="Informações sobre a vaga utilizada para predição")
+    match_score: Optional[float] = Field(None, ge=0, le=1, description="Pontuação de compatibilidade candidato-vaga")
     
     class Config:
         schema_extra = {
             "example": {
                 "prediction": 1,
                 "probability": 0.85,
-                "recommendation": "Recomendado"
+                "recommendation": "Recomendado",
+                "vaga_info": {
+                    "id": "vaga-123",
+                    "titulo": "Desenvolvedor Python",
+                    "area": "tecnologia",
+                    "senioridade": "pleno"
+                },
+                "match_score": 0.78
             }
         }
 

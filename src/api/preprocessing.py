@@ -22,6 +22,9 @@ def preprocess_input(data: Dict[str, Any]) -> pd.DataFrame:
     _process_categorical_fields(df)
     _process_list_fields(df)
     
+    # Processar campos relacionados à vaga
+    _process_job_fields(df)
+    
     # Adicionar features calculadas, se necessário
     _add_calculated_features(df)
     
@@ -163,6 +166,78 @@ def _add_calculated_features(df: pd.DataFrame) -> None:
     # Calcular tempo de experiência não considerando desemprego
     if 'experiencia' in df.columns and 'tempo_desempregado' in df.columns:
         df['experiencia_ativa'] = df['experiencia'] - df['tempo_desempregado'].fillna(0)
+        
+
+def _process_job_fields(df: pd.DataFrame) -> None:
+    """
+    Processa campos relacionados à vaga no DataFrame
+    
+    Args:
+        df: DataFrame a ser processado
+    """
+    # Processar o ID da vaga
+    if 'vaga_id' in df.columns:
+        df['vaga_id'] = df['vaga_id'].fillna('desconhecido')
+    
+    # Processar título da vaga
+    if 'vaga_titulo' in df.columns:
+        df['vaga_titulo'] = df['vaga_titulo'].fillna('').str.lower()
+    
+    # Processar área da vaga
+    if 'vaga_area' in df.columns:
+        df['vaga_area'] = df['vaga_area'].fillna('').str.lower()
+        
+        # Mapear áreas para categorias padrão
+        area_mapping = {
+            'ti': 'tecnologia',
+            'tecnologia': 'tecnologia',
+            'tech': 'tecnologia',
+            'vendas': 'comercial',
+            'comercial': 'comercial',
+            'marketing': 'marketing',
+            'recursos humanos': 'rh',
+            'rh': 'rh',
+            'financeiro': 'financeiro',
+            'finanças': 'financeiro',
+            'contabilidade': 'financeiro',
+            'administrativo': 'administrativo',
+            'adm': 'administrativo',
+            'engenharia': 'engenharia'
+        }
+        
+        df['vaga_area'] = df['vaga_area'].apply(lambda x: area_mapping.get(str(x).lower(), x) if pd.notna(x) else x)
+    
+    # Processar senioridade da vaga
+    if 'vaga_senioridade' in df.columns:
+        df['vaga_senioridade'] = df['vaga_senioridade'].fillna('').str.lower()
+        
+        # Mapear senioridade para valores padrão
+        senioridade_mapping = {
+            'junior': 'junior',
+            'júnior': 'junior',
+            'jr': 'junior',
+            'pleno': 'pleno',
+            'pl': 'pleno',
+            'senior': 'senior',
+            'sênior': 'senior',
+            'sr': 'senior',
+            'especialista': 'senior',
+            'trainee': 'junior',
+            'estagiário': 'estagio',
+            'estagiario': 'estagio',
+            'estágio': 'estagio'
+        }
+        
+        df['vaga_senioridade'] = df['vaga_senioridade'].apply(lambda x: senioridade_mapping.get(str(x).lower(), x) if pd.notna(x) else x)
+    
+    # Calcular match entre área de formação e área da vaga
+    if 'area_formacao' in df.columns and 'vaga_area' in df.columns:
+        df['match_area'] = df.apply(
+            lambda row: 1 if pd.notna(row['area_formacao']) and pd.notna(row['vaga_area']) and 
+                             str(row['area_formacao']).lower() == str(row['vaga_area']).lower() 
+                        else 0, 
+            axis=1
+        )
         df['experiencia_ativa'] = df['experiencia_ativa'].apply(lambda x: max(0, x))
     
     # Outras features calculadas podem ser adicionadas conforme necessário
