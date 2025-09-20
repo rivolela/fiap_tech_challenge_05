@@ -2,7 +2,7 @@
 
 FROM python:3.9-slim
 
-WORKDIR /app
+WORKDIR /opt/render/project/src
 
 # Instalar dependências
 COPY requirements.txt .
@@ -14,7 +14,7 @@ COPY src/ src/
 COPY models/ models/
 
 # Configurar variáveis de ambiente
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/opt/render/project/src
 ENV PORT=8000
 
 # Expor a porta para a API

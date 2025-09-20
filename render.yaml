@@ -8,7 +8,7 @@ services:
     plan: free
     branch: main
     dockerfilePath: ./Dockerfile
-    dockerCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT src.api.scoring_api:app
+    buildCommand: echo "Docker build will use the Dockerfile directly"
     healthCheckPath: /health
     envVars:
       - key: PORT

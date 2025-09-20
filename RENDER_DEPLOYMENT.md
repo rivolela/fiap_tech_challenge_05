@@ -51,7 +51,7 @@ Este guia explica como implantar a API de scoring Decision na plataforma Render.
 Configure as seguintes variáveis de ambiente:
 
 - `PORT`: 8000 (ou deixe o Render configurar automaticamente)
-- `PYTHONPATH`: /app (para Docker) ou seu diretório raiz (sem Docker)
+- `PYTHONPATH`: /opt/render/project/src (para Docker) ou seu diretório raiz (sem Docker)
 
 ## Verificação de Implantação
 
