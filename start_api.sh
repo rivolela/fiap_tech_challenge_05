@@ -33,6 +33,12 @@ echo "📌 Para autenticar, você pode usar:"
 echo "   - Parâmetro de consulta: ?api_key=your-api-key"
 echo "   - Cabeçalho HTTP: X-API-Key: your-api-key"
 echo ""
+echo "📌 Novos campos de vaga disponíveis:"
+echo "   - vaga_id: Identificador único da vaga"
+echo "   - vaga_titulo: Título/nome da vaga"
+echo "   - vaga_area: Área da vaga (ex: tecnologia, comercial)"
+echo "   - vaga_senioridade: Nível de senioridade (ex: junior, pleno, senior)"
+echo ""
 echo "Pressione Ctrl+C para encerrar o servidor"
 
 # Verificar se a porta 8000 já está em uso
