@@ -91,8 +91,10 @@ fiap_tech_challenge_05/
 - **seaborn**: Visualização estatística
 - **plotly**: Gráficos interativos
 - **scikit-learn**: Machine learning
+- **fastapi**: Framework para API
 - **jupyter**: Ambiente de notebooks
 - **mlflow**: Rastreamento e gerenciamento de experimentos de ML
+- **textblob**: Processamento de linguagem natural para LLM
 
 ## 📈 Como Usar
 
@@ -172,20 +174,57 @@ docker run -p 8000:8000 decision-scoring-api
 ```
 
 ### Endpoints Principais
-- `POST /score` - Endpoint principal para predições
+- `POST /score` - Endpoint principal para predições individuais
+- `POST /score/batch` - Processamento de múltiplos candidatos em lote
 - `GET /health` - Health check da API
+- `GET /metrics` - Métricas de desempenho da API (requer autenticação admin)
 - `/docs` - Documentação interativa (Swagger UI)
 
 ### Autenticação
-Todas as requisições devem incluir um cabeçalho `X-API-Key` com uma chave válida.
+Todas as requisições devem incluir um cabeçalho `X-API-Key` com uma chave válida:
+- `your-api-key`: Acesso de administrador (todos os endpoints)
+- `test-api-key`: Acesso somente leitura (endpoints básicos)
+
+### Exemplo de Requisição
+```bash
+curl -X POST "http://localhost:8000/score" \
+  -H "X-API-Key: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idade": 28,
+    "experiencia": 5,
+    "educacao": "ensino_superior",
+    "area_formacao": "tecnologia",
+    "vaga_titulo": "Desenvolvedor Python",
+    "vaga_area": "tecnologia",
+    "vaga_senioridade": "pleno"
+  }'
+```
+
+### Exemplo de Resposta
+```json
+{
+  "prediction": 1,
+  "probability": 0.85,
+  "recommendation": "Recomendado",
+  "comment": "A avaliação técnica sugere boa adequação para a função de Desenvolvedor Python na área de tecnologia, nível pleno. Destaca-se formação superior na área de tecnologia e 5.0 anos de experiência relevante.",
+  "vaga_info": {
+    "id": "vaga-123",
+    "titulo": "Desenvolvedor Python",
+    "area": "tecnologia",
+    "senioridade": "pleno"
+  },
+  "match_score": 0.78
+}
+```
 
 ### Implantação no Render
-Para instruções detalhadas de implantação no Render, consulte o arquivo [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md).
+O projeto pode ser facilmente implantado na plataforma Render usando Docker ou o arquivo de configuração incluído.
 
 #### Opções de Implantação
 1. **Via Blueprint (render.yaml)**: Implantação automática usando nosso arquivo de configuração
-2. **Via Docker**: Implantação manual do contêiner Docker
-3. **Sem Docker**: Implantação usando o ambiente Python do Render
+2. **Via Docker**: Implantação manual do contêiner Docker usando o Dockerfile incluído
+3. **Sem Docker**: Implantação usando o ambiente Python do Render e o Procfile
 
 ## 📝 Dados
 
@@ -216,6 +255,26 @@ O notebook principal inclui:
 - Detecção e tratamento de outliers
 - Distribuições das variáveis principais
 
+## 🧠 Recursos de IA e LLM
+
+O projeto agora inclui recursos de IA para gerar comentários personalizados sobre candidatos:
+
+### Comentários LLM para Recomendações
+A API agora gera automaticamente comentários em linguagem natural para cada recomendação de candidato. Este recurso:
+
+- Analisa o perfil do candidato e os requisitos da vaga
+- Gera texto explicativo sobre o motivo da recomendação positiva ou negativa
+- Adapta o tom e conteúdo com base na probabilidade da predição
+- Inclui detalhes relevantes como experiência e formação do candidato
+
+### Como Funciona
+O sistema utiliza:
+1. **TextBlob** para processamento de linguagem natural
+2. **Templates personalizados** para diferentes cenários de recomendação
+3. **Lógica contextual** para selecionar os detalhes mais relevantes a destacar
+
+Para mais detalhes sobre esta funcionalidade, consulte a documentação em [docs/llm_comments.md](docs/llm_comments.md)
+
 ## 🔮 Próximos Passos
 
 1. **Experimentação com MLflow**: 
@@ -236,6 +295,7 @@ O notebook principal inclui:
 4. **Produtivização**:
    - ✅ API REST para servir o modelo - implementada com FastAPI
    - ✅ Implantação no Render - configurada com Docker
+   - ✅ Comentários LLM para explicabilidade - implementado com TextBlob
    - Monitoramento contínuo de performance
    - Pipeline de retreinamento automático
 

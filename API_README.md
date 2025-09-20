@@ -6,6 +6,8 @@ Este componente fornece uma API REST para servir o modelo de scoring desenvolvid
 
 - Endpoint para predição de sucesso na contratação de candidatos
 - Processamento de predições individuais ou em lote
+- Comentários personalizados via LLM sobre cada recomendação
+- Suporte para informações de vagas de emprego
 - Autenticação via API key
 - Monitoramento de saúde e métricas de desempenho
 - Documentação interativa com Swagger UI
@@ -71,7 +73,12 @@ docker run -p 8000:8000 decision-scoring-api
   "idade": 32,
   "experiencia": 6,
   "educacao": "ensino_superior",
-  "habilidades": ["python", "machine_learning", "estatistica"]
+  "area_formacao": "tecnologia",
+  "habilidades": ["python", "machine_learning", "estatistica"],
+  "vaga_titulo": "Desenvolvedor Python",
+  "vaga_area": "tecnologia",
+  "vaga_senioridade": "pleno",
+  "vaga_id": "vaga-123"
 }
 ```
 
@@ -80,7 +87,15 @@ docker run -p 8000:8000 decision-scoring-api
 {
   "prediction": 1,
   "probability": 0.85,
-  "recommendation": "Recomendado"
+  "recommendation": "Recomendado",
+  "comment": "A análise indica boa adequação ao cargo de Desenvolvedor Python na área de tecnologia, nível pleno. O candidato possui 6.0 anos de experiência relevante e formação superior na área de tecnologia.",
+  "vaga_info": {
+    "id": "vaga-123",
+    "titulo": "Desenvolvedor Python",
+    "area": "tecnologia",
+    "senioridade": "pleno"
+  },
+  "match_score": 0.78
 }
 ```
 
