@@ -1,6 +1,6 @@
-# FIAP Tech Challenge 05 - Análise de Dados de Recrutamento
+# FIAP Tech Challenge 05 - Decision Scoring API
 
-Este projeto contém análises exploratórias de dados para sistema de recrutamento utilizando Python e Jupyter Notebooks.
+Este projeto contém análises exploratórias de dados para sistema de recrutamento e uma API de scoring para auxiliar na tomada de decisão no processo de recrutamento.
 
 ## 🚀 Configuração do Ambiente
 
@@ -156,6 +156,37 @@ python src/models/mlflow_server.py --delete "Decision-Scoring-Model"
 
 Para mais detalhes sobre MLflow, consulte o guia em [docs/mlflow_guide.md](docs/mlflow_guide.md)
 
+## 🚀 API de Scoring
+
+O projeto inclui uma API para servir o modelo de Machine Learning treinado:
+
+### Executando a API Localmente
+```bash
+./start_api.sh
+```
+
+### Utilizando Docker
+```bash
+docker build -t decision-scoring-api .
+docker run -p 8000:8000 decision-scoring-api
+```
+
+### Endpoints Principais
+- `POST /score` - Endpoint principal para predições
+- `GET /health` - Health check da API
+- `/docs` - Documentação interativa (Swagger UI)
+
+### Autenticação
+Todas as requisições devem incluir um cabeçalho `X-API-Key` com uma chave válida.
+
+### Implantação no Render
+Para instruções detalhadas de implantação no Render, consulte o arquivo [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md).
+
+#### Opções de Implantação
+1. **Via Blueprint (render.yaml)**: Implantação automática usando nosso arquivo de configuração
+2. **Via Docker**: Implantação manual do contêiner Docker
+3. **Sem Docker**: Implantação usando o ambiente Python do Render
+
 ## 📝 Dados
 
 O projeto utiliza três datasets em formato JSON na pasta `data/`:
@@ -188,9 +219,9 @@ O notebook principal inclui:
 ## 🔮 Próximos Passos
 
 1. **Experimentação com MLflow**: 
-   - Otimização de hiperparâmetros
-   - Teste de diferentes algoritmos
-   - Comparação de métricas de desempenho
+   - ✅ Otimização de hiperparâmetros - implementado com RandomizedSearchCV
+   - ✅ Teste de diferentes algoritmos - implementado com comparação de modelos
+   - ✅ Comparação de métricas de desempenho - tracking com MLflow
 
 2. **Implementação de Clustering**:
    - Segmentação de candidatos por perfil
@@ -203,7 +234,8 @@ O notebook principal inclui:
    - Validação cruzada para maior robustez
 
 4. **Produtivização**:
-   - API REST para servir o modelo
+   - ✅ API REST para servir o modelo - implementada com FastAPI
+   - ✅ Implantação no Render - configurada com Docker
    - Monitoramento contínuo de performance
    - Pipeline de retreinamento automático
 

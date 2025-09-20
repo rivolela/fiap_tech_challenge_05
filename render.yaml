@@ -1,0 +1,16 @@
+# render.yaml
+services:
+  - type: web
+    name: decision-scoring-api
+    runtime: docker
+    repo: https://github.com/rivolela/fiap_tech_challenge_05.git
+    region: oregon
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT src.api.scoring_api:app
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+    autoDeploy: true

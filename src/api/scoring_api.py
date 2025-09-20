@@ -85,6 +85,9 @@ def verify_api_key(
             detail="API Key não fornecida. Forneça via parâmetro 'api_key' ou cabeçalho 'X-API-Key'"
         )
     
+    # Remover espaços em branco antes e depois da chave
+    key = key.strip() if key else None
+    
     if key not in API_KEYS:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -231,6 +234,12 @@ async def predict_batch(
 
 
 @app.get(
+    "/health", 
+    response_model=HealthResponse,
+    status_code=status.HTTP_200_OK,
+    description="Verifica o status de saúde da API"
+)
+@app.get(
     "/health/", 
     response_model=HealthResponse,
     status_code=status.HTTP_200_OK,
@@ -279,16 +288,16 @@ async def health():
     status_code=status.HTTP_200_OK,
     description="Retorna métricas de desempenho da API"
 )
-async def get_metrics(api_key: str = Depends(verify_api_key)):
+async def get_metrics(role: str = Depends(verify_api_key)):
     """
     Endpoint para obter métricas de desempenho da API
     Requer autenticação com API key
     """
     # Verificar se o usuário tem permissão de admin
-    if API_KEYS[api_key] != "admin":
+    if role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Permissão insuficiente para acessar métricas"
+            detail="Permissão insuficiente para acessar métricas. Requer API key com nível 'admin'."
         )
     
     # Calcular métricas
@@ -353,7 +362,13 @@ def custom_openapi():
             "de machine learning desenvolvido pela Decision."
             "\n\n"
             "## Autenticação\n"
-            "Esta API requer autenticação via API Key no parâmetro `api_key`.\n"
+            "Esta API requer autenticação via API Key. Você pode fornecer a API Key de duas formas:\n"
+            "1. Via query parameter: `?api_key=your-api-key`\n" 
+            "2. Via HTTP header: `X-API-Key: your-api-key`\n"
+            "\n"
+            "API Keys disponíveis:\n"
+            "- `your-api-key`: Acesso de administrador (todos os endpoints)\n"
+            "- `test-api-key`: Acesso somente leitura (endpoints básicos)\n"
             "\n"
             "## Endpoints\n"
             "- `/predict/`: Predição individual de candidatos\n"
