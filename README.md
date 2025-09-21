@@ -11,7 +11,7 @@ Este projeto contém análises exploratórias de dados para sistema de recrutame
 ### Configuração Automática
 Execute o script de setup:
 ```bash
-./setup.sh
+./scripts/setup.sh
 ```
 
 ### Configuração Manual
@@ -117,7 +117,7 @@ jupyter notebook
 Execute o pipeline completo com MLflow usando:
 
 ```bash
-./run_pipeline.sh
+./scripts/run_pipeline.sh
 ```
 
 Opções disponíveis:
@@ -164,7 +164,7 @@ O projeto inclui uma API para servir o modelo de Machine Learning treinado:
 
 ### Executando a API Localmente
 ```bash
-./start_api.sh
+./scripts/start_api.sh
 ```
 
 ### Utilizando Docker

@@ -1,10 +1,7 @@
 #!/bin/bash
-# Script para executar o pipeline completo de treinamento com MLflow
-# Autor: GitHub Copilot
-# Data: Setembro 2023
-
-echo "=== PIPELINE DE TREINAMENTO COM MLFLOW ==="
-echo "Verificando ambiente..."
+# Wrapper para manter compatibilidade após mover scripts para pasta scripts/
+echo "⚙️ Redirecionando para scripts/run_pipeline.sh..."
+./scripts/run_pipeline.sh "$@"
 
 # Ativar ambiente virtual se existir
 if [ -d ".venv" ]; then
@@ -55,11 +52,49 @@ echo ""
 
 # Executar treinamento do modelo
 echo "🔄 Iniciando treinamento do modelo..."
+
+# Opções adicionais para prevenção de data leakage e validação cruzada
+USE_CV=true
+PREVENT_LEAKAGE=true
+FEATURE_SELECTION=true
+CV_FOLDS=5
+
+# Processar argumentos adicionais
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --no-cv) USE_CV=false ;;
+        --no-leakage-prevention) PREVENT_LEAKAGE=false ;;
+        --no-feature-selection) FEATURE_SELECTION=false ;;
+        --cv-folds) CV_FOLDS="$2"; shift ;;
+    esac
+    shift
+done
+
+# Construir o comando com base nas opções
+CMD="python src/models/train_simple.py"
+
+# Adicionar opções baseadas nas configurações
 if [ "$COMPARE" = true ]; then
-    python src/models/train_simple.py --compare
-else
-    python src/models/train_simple.py
+    CMD="$CMD --compare"
 fi
+
+if [ "$USE_CV" = false ]; then
+    CMD="$CMD --no-cv"
+fi
+
+if [ "$PREVENT_LEAKAGE" = false ]; then
+    CMD="$CMD --no-leakage-prevention"
+fi
+
+if [ "$FEATURE_SELECTION" = false ]; then
+    CMD="$CMD --no-feature-selection"
+fi
+
+CMD="$CMD --cv-folds $CV_FOLDS"
+
+# Executar o comando
+echo "Executando: $CMD"
+$CMD
 
 # Exibir mensagem final
 echo ""

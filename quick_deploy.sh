@@ -1,8 +1,7 @@
 #!/bin/bash
-
-# Script para implantação local rápida da API de scoring
-
-echo "🚀 Iniciando implantação local da API de scoring"
+# Wrapper para manter compatibilidade após mover scripts para pasta scripts/
+echo "⚙️ Redirecionando para scripts/quick_deploy.sh..."
+./scripts/quick_deploy.sh
 
 # Verificar se o ambiente virtual existe
 if [ ! -d ".venv" ]; then

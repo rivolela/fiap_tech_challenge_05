@@ -1,9 +1,7 @@
 #!/bin/bash
-# Script para iniciar a API do modelo de scoring
-
-set -e
-
-echo "=== DECISION SCORING API ==="
+# Wrapper para manter compatibilidade após mover scripts para pasta scripts/
+echo "⚙️ Redirecionando para scripts/start_api.sh..."
+./scripts/start_api.sh
 
 # Verificar se o modelo existe
 if [ ! -f "models/scoring_model.pkl" ]; then

@@ -28,14 +28,16 @@ Antes de iniciar a API, certifique-se de ter o modelo treinado:
 
 ```bash
 # Execute o pipeline de treinamento
-./run_pipeline.sh
+```bash
+./scripts/run_pipeline.sh
+```
 ```
 
 ### 2. Iniciando a API
 
 ```bash
 # Usando o script de inicialização
-./start_api.sh
+./scripts/start_api.sh
 
 # Ou manualmente
 export PYTHONPATH=$(pwd)

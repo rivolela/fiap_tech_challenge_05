@@ -1,8 +1,7 @@
 #!/bin/bash
-# Setup script para o projeto FIAP Tech Challenge 05
-
-echo "=== CONFIGURAÇÃO DO AMBIENTE PYTHON ==="
-echo "Criando ambiente virtual..."
+# Wrapper para manter compatibilidade após mover scripts para pasta scripts/
+echo "⚙️ Redirecionando para scripts/setup.sh..."
+./scripts/setup.sh
 
 # Criar ambiente virtual se não existir
 if [ ! -d ".venv" ]; then
