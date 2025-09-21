@@ -23,8 +23,11 @@ from src.api.schemas import (
     ErrorResponse,
     MetricsResponse
 )
-from src.api.model_loader import load_model, get_feature_list
+from src.api.model_loader import load_model, get_feature_list, check_sklearn_version
 from src.api.preprocessing import preprocess_input, preprocess_batch
+
+# Verificar a versão do scikit-learn
+check_sklearn_version()
 
 # Configurar logging
 logging.basicConfig(
@@ -198,6 +201,7 @@ async def predict(
             prediction=prediction_result["prediction"],
             probability=prediction_result["probability"],
             recommendation=prediction_result["recommendation"],
+            comment=prediction_result.get("comment"),
             vaga_info=vaga_info,
             match_score=match_score
         )
@@ -262,6 +266,7 @@ async def predict_batch(
                 prediction=prediction_result["prediction"],
                 probability=prediction_result["probability"],
                 recommendation=prediction_result["recommendation"],
+                comment=prediction_result.get("comment"),
                 vaga_info=vaga_info,
                 match_score=match_score
             ))

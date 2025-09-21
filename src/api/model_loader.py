@@ -18,6 +18,29 @@ _model = None
 _scaler = None
 _encoder = None
 
+def check_sklearn_version():
+    """
+    Verifica a versão do scikit-learn instalada e exibe um aviso se não for compatível.
+    
+    A versão recomendada é 1.7.1 para compatibilidade com o modelo salvo.
+    """
+    try:
+        import sklearn
+        current_version = sklearn.__version__
+        required_version = "1.7.1"
+        
+        print(f"scikit-learn versão instalada: {current_version}")
+        print(f"scikit-learn versão recomendada: {required_version}")
+        
+        if current_version != required_version:
+            print("\n⚠️ AVISO DE COMPATIBILIDADE ⚠️")
+            print(f"A versão instalada do scikit-learn ({current_version}) é diferente da versão")
+            print(f"utilizada para treinar o modelo ({required_version}).")
+            print("Isso pode causar problemas de compatibilidade ou avisos durante a execução.")
+            print("Para resolver, execute: pip install scikit-learn==1.7.1\n")
+    except ImportError:
+        print("Não foi possível verificar a versão do scikit-learn.")
+
 
 def load_model():
     """
@@ -33,8 +56,19 @@ def load_model():
             raise FileNotFoundError(f"Modelo não encontrado em {MODEL_PATH}. Execute o treinamento primeiro.")
         
         print(f"Carregando modelo de {MODEL_PATH}...")
-        with open(MODEL_PATH, 'rb') as f:
-            _model = pickle.load(f)
+        try:
+            # Suprimir avisos de versão durante o carregamento
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning)
+                with open(MODEL_PATH, 'rb') as f:
+                    _model = pickle.load(f)
+            print("Modelo carregado com sucesso!")
+        except Exception as e:
+            print(f"Erro ao carregar modelo: {e}")
+            print("Este erro pode ocorrer devido a incompatibilidade de versões do scikit-learn.")
+            print("Verifique se a versão instalada (scikit-learn==1.7.1) é compatível com o modelo salvo.")
+            raise
     
     return _model
 
