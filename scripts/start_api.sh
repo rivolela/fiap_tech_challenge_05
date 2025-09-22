@@ -1,29 +1,63 @@
 #!/bin/bash
-# Script para iniciar a API do modelo de scoring
+# Script para iniciar a API do modelo de scoring com ambiente virtual
+# Resolve o erro "No module named 'numpy._core'"
 
 set -e
 
-echo "=== DECISION SCORING API ==="
+# Cores para output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${YELLOW}=== DECISION SCORING API ===${NC}"
 
 # Verificar se o modelo existe
 if [ ! -f "models/scoring_model.pkl" ]; then
-    echo "❌ Modelo não encontrado em models/scoring_model.pkl"
-    echo "Execute o treinamento primeiro com: ./scripts/run_pipeline.sh"
+    echo -e "${YELLOW}❌ Modelo não encontrado em models/scoring_model.pkl${NC}"
+    echo -e "${YELLOW}Execute o treinamento primeiro com: ./scripts/run_pipeline.sh${NC}"
     exit 1
 fi
 
-# Verificar se as dependências estão instaladas
-pip show fastapi uvicorn > /dev/null || {
-    echo "📦 Instalando dependências necessárias..."
-    pip install fastapi uvicorn
-}
+# Verificar se o arquivo .env existe, se não criar a partir do exemplo
+if [ ! -f .env ]; then
+    echo -e "${YELLOW}Arquivo .env não encontrado, criando a partir do exemplo...${NC}"
+    cp .env.example .env
+    echo -e "${GREEN}Criado arquivo .env. Ajuste as configurações conforme necessário.${NC}"
+fi
 
-# Garantir que o TextBlob está instalado para a funcionalidade de LLM
+# Verificar e criar ambiente virtual Python
+if [ ! -d ".venv" ]; then
+    echo -e "${YELLOW}Criando ambiente virtual Python (.venv)...${NC}"
+    python3 -m venv .venv
+    echo -e "${GREEN}Ambiente virtual criado em .venv${NC}"
+fi
+
+# Ativar ambiente virtual
+echo -e "${YELLOW}Ativando ambiente virtual...${NC}"
+source .venv/bin/activate
+
+# Atualizar pip
+echo -e "${YELLOW}Atualizando pip...${NC}"
+pip install --upgrade pip
+
+# Instalar NumPy em versão compatível primeiro
+echo -e "${YELLOW}Instalando NumPy em versão compatível (1.24.3)...${NC}"
+pip install numpy==1.24.3
+
+# Instalar demais dependências do requirements.txt
+echo -e "${YELLOW}Instalando demais dependências...${NC}"
 pip install -r requirements.txt
 
+# Verificar instalação de NumPy e scikit-learn
+echo -e "${YELLOW}Verificando instalação:${NC}"
+pip list | grep numpy
+pip list | grep scikit-learn
+
+echo -e "${GREEN}Ambiente configurado com sucesso!${NC}"
+
 # Executar a API
-echo "🚀 Iniciando a API na porta 8000..."
-uvicorn src.api.scoring_api:app --host 0.0.0.0 --port 8000
+echo -e "${YELLOW}🚀 Iniciando a API na porta 8000...${NC}"
+python -m uvicorn src.api.scoring_api:app --host 0.0.0.0 --port 8000 --reload
 
 # Notas de uso:
 # Para iniciar com recarga automática (desenvolvimento):
