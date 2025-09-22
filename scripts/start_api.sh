@@ -41,8 +41,12 @@ echo -e "${YELLOW}Atualizando pip...${NC}"
 pip install --upgrade pip
 
 # Instalar NumPy em versão compatível primeiro
-echo -e "${YELLOW}Instalando NumPy em versão compatível (1.24.3)...${NC}"
-pip install numpy==1.24.3
+echo -e "${YELLOW}Instalando NumPy em versão compatível com Python 3.12...${NC}"
+pip install --only-binary=:all: numpy==1.26.0
+
+# Instalar scikit-learn específica
+echo -e "${YELLOW}Instalando scikit-learn específica...${NC}"
+pip install --only-binary=:all: scikit-learn==1.7.1
 
 # Instalar demais dependências do requirements.txt
 echo -e "${YELLOW}Instalando demais dependências...${NC}"
