@@ -1,6 +1,6 @@
 """API FastAPI para o sistema de scoring da Decision"""
 
-from fastapi import FastAPI, HTTPException, Depends, Query, Header, status
+from fastapi import FastAPI, HTTPException, Depends, Query, Header, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -12,6 +12,7 @@ import datetime
 import logging
 import uuid
 from typing import Dict, List, Optional, Any
+from dotenv import load_dotenv
 
 # Importar módulos locais
 from src.api.schemas import (
@@ -62,41 +63,8 @@ REQUEST_COUNT = 0
 ERROR_COUNT = 0
 LATENCY_SUM = 0.0
 
-# Chaves de API válidas (em um sistema real, use um sistema de gerenciamento de secrets)
-# Em produção, armazene em um banco de dados seguro ou serviço de gerenciamento de segredos
-API_KEYS = {
-    "your-api-key": "admin",
-    "test-api-key": "read-only"
-}
-
-# Função para obter o cabeçalho X-API-Key
-def get_api_key_header(x_api_key: Optional[str] = Header(None, alias="X-API-Key")):
-    return x_api_key
-
-# Verificação de autenticação por API key
-def verify_api_key(
-    api_key: Optional[str] = Query(None, description="API Key para autenticação"),
-    x_api_key: Optional[str] = Depends(get_api_key_header)
-):
-    """Verifica se a API key fornecida é válida, seja por query param ou header"""
-    # Obter a API key do cabeçalho se não estiver na query
-    key = api_key or x_api_key
-    
-    if not key:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="API Key não fornecida. Forneça via parâmetro 'api_key' ou cabeçalho 'X-API-Key'"
-        )
-    
-    # Remover espaços em branco antes e depois da chave
-    key = key.strip() if key else None
-    
-    if key not in API_KEYS:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="API Key inválida"
-        )
-    return API_KEYS[key]
+# Importar funções de segurança
+from src.api.security import verify_api_key
 
 # Função para registrar métricas de API
 def update_metrics(start_time: float, success: bool):
@@ -144,14 +112,16 @@ async def log_requests(request, call_next):
 # Endpoints da API
 
 @app.post(
-    "/predict/", 
+    "/predict", 
     response_model=PredictionResponse,
     status_code=status.HTTP_200_OK,
+    tags=["prediction"],
     description="Realiza uma predição para um candidato em relação a uma vaga"
 )
 async def predict(
     candidate: CandidateRequest,
-    api_key: str = Depends(verify_api_key)
+    request: Request,
+    role: str = Depends(verify_api_key)
 ):
     """
     Endpoint para predição individual de candidatos
@@ -215,26 +185,28 @@ async def predict(
 
 
 @app.post(
-    "/predict/batch/", 
+    "/predict/batch", 
     response_model=BatchPredictionResponse,
     status_code=status.HTTP_200_OK,
+    tags=["prediction"],
     description="Realiza predições em lote para múltiplos candidatos"
 )
 async def predict_batch(
-    request: BatchCandidateRequest,
-    api_key: str = Depends(verify_api_key)
+    batch_request: BatchCandidateRequest,
+    request: Request,
+    role: str = Depends(verify_api_key)
 ):
     """
     Endpoint para predição em lote de múltiplos candidatos
     """
     try:
-        batch_size = len(request.candidates)
+        batch_size = len(batch_request.candidates)
         logger.info(f"Processando predição em lote para {batch_size} candidatos")
         
         # Processar cada candidato
         results = []
         
-        for candidate in request.candidates:
+        for candidate in batch_request.candidates:
             input_data = candidate.dict()
             df = preprocess_input(input_data)
             
@@ -293,6 +265,7 @@ async def predict_batch(
     "/health", 
     response_model=HealthResponse,
     status_code=status.HTTP_200_OK,
+    tags=["monitoring"],
     description="Verifica o status de saúde da API"
 )
 @app.get(
@@ -342,9 +315,10 @@ async def health():
     "/metrics/", 
     response_model=MetricsResponse,
     status_code=status.HTTP_200_OK,
+    tags=["monitoring"],
     description="Retorna métricas de desempenho da API"
 )
-async def get_metrics(role: str = Depends(verify_api_key)):
+async def get_metrics(request: Request, role: str = Depends(verify_api_key)):
     """
     Endpoint para obter métricas de desempenho da API
     Requer autenticação com API key
@@ -391,9 +365,10 @@ async def get_metrics(role: str = Depends(verify_api_key)):
 @app.get(
     "/", 
     status_code=status.HTTP_200_OK,
+    tags=["system"],
     description="Endpoint raiz da API"
 )
-async def root():
+async def root(request: Request):
     """
     Endpoint raiz com informações básicas
     """

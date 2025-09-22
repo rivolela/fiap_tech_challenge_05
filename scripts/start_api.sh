@@ -22,10 +22,11 @@ pip show fastapi uvicorn > /dev/null || {
 pip install -r requirements.txt
 
 # Executar a API
-python -m src.api.scoring_api
+echo "🚀 Iniciando a API na porta 8000..."
+uvicorn src.api.scoring_api:app --host 0.0.0.0 --port 8000
 
 # Notas de uso:
-# Para iniciar em uma porta específica:
+# Para iniciar com recarga automática (desenvolvimento):
 #   uvicorn src.api.scoring_api:app --host 0.0.0.0 --port 8000 --reload
 # 
 # Para iniciar com múltiplos workers em produção:
