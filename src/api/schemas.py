@@ -200,3 +200,44 @@ class MetricsResponse(BaseModel):
                 }
             }
         }
+
+
+class FeatureDriftDetail(BaseModel):
+    """Detalhes do drift de uma feature específica"""
+    drift_detected: bool = Field(..., description="Indica se foi detectado drift nesta feature")
+    metrics: Dict[str, Any] = Field(..., description="Métricas de drift para esta feature")
+    type: str = Field(..., description="Tipo da feature (numérica ou categórica)")
+
+
+class DriftResponse(BaseModel):
+    """Esquema para resposta de análise de drift do modelo"""
+    timestamp: str = Field(..., description="Timestamp da análise")
+    drift_score: float = Field(..., description="Score geral de drift (0-1)")
+    drift_detected: bool = Field(..., description="Indicador se foi detectado drift significativo")
+    n_samples_analyzed: int = Field(..., description="Número de amostras analisadas")
+    features_analyzed: int = Field(..., description="Número de features analisadas")
+    features_with_drift: List[str] = Field([], description="Lista de features com drift detectado")
+    feature_details: Dict[str, FeatureDriftDetail] = Field({}, description="Detalhes do drift por feature")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "timestamp": "2023-06-01T12:34:56Z",
+                "drift_score": 0.25,
+                "drift_detected": True,
+                "n_samples_analyzed": 1256,
+                "features_analyzed": 20,
+                "features_with_drift": ["idade", "experiencia_anos", "salario_atual"],
+                "feature_details": {
+                    "idade": {
+                        "drift_detected": True,
+                        "metrics": {
+                            "train_mean": 35.2,
+                            "current_mean": 38.7,
+                            "standardized_mean_diff": 2.4
+                        },
+                        "type": "numeric"
+                    }
+                }
+            }
+        }

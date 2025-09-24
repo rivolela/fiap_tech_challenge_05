@@ -178,6 +178,38 @@ docker run -p 8000:8000 decision-scoring-api
 - `POST /score/batch` - Processamento de múltiplos candidatos em lote
 - `GET /health` - Health check da API
 - `GET /metrics` - Métricas de desempenho da API (requer autenticação admin)
+- `GET /monitoring/drift` - Análise de drift do modelo (requer autenticação admin)
+- `GET /monitoring/drift/visualization` - Visualização de drift para uma feature específica
+- `GET /monitoring/metrics/history` - Histórico de métricas do modelo
+- `GET /monitoring/predictions/recent` - Estatísticas sobre predições recentes
+
+### Sistema de Monitoramento
+
+O projeto inclui um sistema completo de monitoramento para acompanhar o desempenho do modelo e detectar drift:
+
+#### Dashboard de Métricas
+
+Para iniciar o dashboard de monitoramento:
+
+```bash
+./scripts/start_dashboard.sh
+```
+
+O dashboard fornece:
+- Visualização em tempo real das métricas do modelo
+- Análise de drift entre dados de treino e produção
+- Histórico de desempenho do modelo
+- Estatísticas sobre predições recentes
+
+#### Verificação de Drift
+
+Para verificar drift e gerar alertas:
+
+```bash
+./scripts/check_drift.sh
+```
+
+Consulte a [documentação completa do sistema de monitoramento](docs/monitoring_guide.md) para mais detalhes.
 - `/docs` - Documentação interativa (Swagger UI)
 
 ### Autenticação

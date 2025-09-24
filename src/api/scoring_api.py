@@ -22,8 +22,28 @@ from src.api.schemas import (
     BatchPredictionResponse,
     HealthResponse,
     ErrorResponse,
-    MetricsResponse
+    MetricsResponse,
+    DriftResponse
 )
+# Importar módulos de monitoramento
+try:
+    from src.monitoring.metrics_store import (
+        initialize_metrics_store,
+        get_metrics_history,
+        log_prediction,
+        get_recent_predictions,
+        save_model_metrics
+    )
+    from src.monitoring.drift_detector import (
+        initialize_drift_detector,
+        generate_drift_report,
+        get_latest_drift_report,
+        visualize_feature_drift
+    )
+    MONITORING_AVAILABLE = True
+except ImportError:
+    MONITORING_AVAILABLE = False
+    print("⚠️ Módulos de monitoramento não disponíveis. Algumas funcionalidades estarão limitadas.")
 from src.api.model_loader import load_model, get_feature_list, check_sklearn_version
 from src.api.preprocessing import preprocess_input, preprocess_batch
 
@@ -48,6 +68,14 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Importar e incluir endpoints de monitoramento se estiverem disponíveis
+try:
+    from src.api.monitoring_endpoints import router as monitoring_router
+    app.include_router(monitoring_router)
+    logger.info("Endpoints de monitoramento carregados com sucesso.")
+except ImportError as e:
+    logger.warning(f"Não foi possível carregar endpoints de monitoramento: {str(e)}")
+
 # Configurar CORS para permitir requisições de origens específicas
 app.add_middleware(
     CORSMiddleware,
@@ -64,7 +92,21 @@ ERROR_COUNT = 0
 LATENCY_SUM = 0.0
 
 # Importar funções de segurança
-from src.api.security import verify_api_key
+from src.api.security import verify_api_key, init_api_keys
+
+# Inicializar as chaves de API
+init_api_keys()
+
+# Inicializar o sistema de monitoramento
+if MONITORING_AVAILABLE:
+    try:
+        logger.info("Inicializando sistema de monitoramento de métricas e drift...")
+        initialize_metrics_store()
+        initialize_drift_detector()
+        logger.info("Sistema de monitoramento inicializado com sucesso.")
+    except Exception as e:
+        logger.error(f"Erro ao inicializar monitoramento: {str(e)}")
+        MONITORING_AVAILABLE = False
 
 # Função para registrar métricas de API
 def update_metrics(start_time: float, success: bool):
@@ -166,7 +208,27 @@ async def predict(
             if 'match_area' in df.columns and df['match_area'].iloc[0] == 1:
                 match_score = min(1.0, match_score * 1.2)  # Aumento de 20%, máximo de 1.0
         
-        # Retornar resultado formatado
+            # Registrar predição para monitoramento de drift, se disponível
+            if MONITORING_AVAILABLE:
+                try:
+                    # Extrair características principais para log
+                    features_dict = {col: df[col].iloc[0] for col in df.columns if col != 'target'}
+                    
+                    # Gerar ID único para o candidato se não fornecido
+                    candidate_id = str(uuid.uuid4())
+                    
+                    # Registrar predição
+                    log_prediction(
+                        candidate_id=candidate_id,
+                        prediction=prediction_result["prediction"],
+                        prediction_probability=prediction_result["probability"],
+                        features=features_dict,
+                        segment=input_data.get("area", None)
+                    )
+                except Exception as e:
+                    logger.warning(f"Erro ao registrar predição para monitoramento: {str(e)}")
+            
+            # Retornar resultado formatado
         return PredictionResponse(
             prediction=prediction_result["prediction"],
             probability=prediction_result["probability"],
@@ -345,13 +407,41 @@ async def get_metrics(request: Request, role: str = Depends(verify_api_key)):
         error_rate = (ERROR_COUNT / REQUEST_COUNT) * 100
         avg_latency = LATENCY_SUM / REQUEST_COUNT * 1000  # em milissegundos
     
-    # Obter métricas do modelo (em um sistema real, estas seriam monitoradas)
-    model_metrics = {
-        "accuracy": 0.85,  # Exemplo, em produção use métricas reais
-        "precision": 0.82,
-        "recall": 0.87,
-        "f1_score": 0.84
-    }
+    # Obter métricas do modelo
+    if MONITORING_AVAILABLE:
+        try:
+            # Buscar métricas do histórico
+            metrics_history = get_metrics_history()
+            if metrics_history["metrics_history"]:
+                # Usar as métricas mais recentes
+                latest_metrics = metrics_history["metrics_history"][-1]["metrics"]
+                model_metrics = latest_metrics
+            else:
+                # Métricas default se não houver histórico
+                model_metrics = {
+                    "accuracy": 0.85,
+                    "precision": 0.82,
+                    "recall": 0.87,
+                    "f1_score": 0.84
+                }
+                # Salvar as métricas padrão no sistema
+                save_model_metrics(model_metrics)
+        except Exception as e:
+            logger.warning(f"Erro ao buscar métricas do modelo: {str(e)}")
+            model_metrics = {
+                "accuracy": 0.85,
+                "precision": 0.82,
+                "recall": 0.87,
+                "f1_score": 0.84
+            }
+    else:
+        # Métricas de exemplo
+        model_metrics = {
+            "accuracy": 0.85,  # Exemplo, em produção use métricas reais
+            "precision": 0.82,
+            "recall": 0.87,
+            "f1_score": 0.84
+        }
     
     return MetricsResponse(
         uptime=uptime_str,

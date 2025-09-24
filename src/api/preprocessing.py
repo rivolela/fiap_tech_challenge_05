@@ -238,6 +238,9 @@ def _process_job_fields(df: pd.DataFrame) -> None:
                         else 0, 
             axis=1
         )
+    
+    # Verificar se existe a coluna experiencia_ativa antes de aplicar a função
+    if 'experiencia_ativa' in df.columns:
         df['experiencia_ativa'] = df['experiencia_ativa'].apply(lambda x: max(0, x))
     
     # Outras features calculadas podem ser adicionadas conforme necessário

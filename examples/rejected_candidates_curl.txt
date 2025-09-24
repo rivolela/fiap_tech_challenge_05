@@ -1,0 +1,37 @@
+# Comandos curl para candidatos REPROVADOS
+
+
+
+# Exemplo 1 - Não Aprovado pelo Cliente - Oracle Cloud Global Trade Management
+curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"idade": 30, "experiencia": 5.8, "educacao": "ensino_superior", "tempo_desempregado": 0.8, "area_formacao": "geral", "habilidades": ["trabalho em equipe", "comunicação"], "cargo_anterior": "Analista de Geral", "salario_anterior": 10189, "anos_estudo": 16, "vaga_id": "11778", "vaga_titulo": "Oracle Cloud Global Trade Management", "vaga_area": "geral", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Não Aprovado pelo Cliente", "data_candidatura": "22-09-2023", "nome_candidato": "Dra."}}' 
+
+
+# Exemplo 2 - Não Aprovado pelo Cliente - Analista/Desenvolvedor de Sistema .Net FrameWork - 799/2021
+curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"idade": 24, "experiencia": 4.4, "educacao": "pos_graduacao", "tempo_desempregado": 0.2, "area_formacao": "tecnologia", "habilidades": ["javascript", "angular", "docker"], "cargo_anterior": "Analista de Tecnologia", "salario_anterior": 6930, "anos_estudo": 18, "vaga_id": "9392", "vaga_titulo": "Analista/Desenvolvedor de Sistema .Net FrameWork - 799/2021", "vaga_area": "tecnologia", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Não Aprovado pelo Cliente", "data_candidatura": "10-06-2022", "nome_candidato": "Dra."}}' 
+
+
+# Exemplo 3 - Não Aprovado pelo Requisitante - SAP SD Sênior - 1136
+curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"idade": 37, "experiencia": 10.5, "educacao": "pos_graduacao", "tempo_desempregado": 1.4, "area_formacao": "financeiro", "habilidades": ["comunicação", "trabalho em equipe"], "cargo_anterior": "Especialista de Geral", "salario_anterior": 10716, "anos_estudo": 18, "vaga_id": "12947", "vaga_titulo": "SAP SD Sênior - 1136", "vaga_area": "geral", "vaga_senioridade": "senior", "extra_data": {"situacao_original": "Não Aprovado pelo Requisitante", "data_candidatura": "18-06-2024", "nome_candidato": "Ravi"}}' 
+
+
+# Exemplo 4 - Não Aprovado pelo Cliente - Analista de Sistemas Windows - 10576182
+curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"idade": 22, "experiencia": 4.2, "educacao": "pos_graduacao", "tempo_desempregado": 1.1, "area_formacao": "tecnologia", "habilidades": ["react", "node.js", "java", "data science", "sql"], "cargo_anterior": "Consultor de Tecnologia", "salario_anterior": 7331, "anos_estudo": 18, "vaga_id": "2988", "vaga_titulo": "Analista de Sistemas Windows - 10576182", "vaga_area": "tecnologia", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Não Aprovado pelo Cliente", "data_candidatura": "09-09-2020", "nome_candidato": "Gustavo"}}' 
+
+
+# Exemplo 5 - Não Aprovado pelo Requisitante - Analista de credito imobiliario - 10576610
+curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"idade": 29, "experiencia": 3.9, "educacao": "ensino_superior", "tempo_desempregado": 0.2, "area_formacao": "geral", "habilidades": ["trabalho em equipe", "comunicação"], "cargo_anterior": "Consultor de Geral", "salario_anterior": 8802, "anos_estudo": 16, "vaga_id": "2968", "vaga_titulo": "Analista de credito imobiliario - 10576610", "vaga_area": "geral", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Não Aprovado pelo Requisitante", "data_candidatura": "21-09-2020", "nome_candidato": "Dra."}}' 

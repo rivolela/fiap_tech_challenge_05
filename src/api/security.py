@@ -17,14 +17,15 @@ logger = logging.getLogger("decision-api.security")
 # Carregar variáveis de ambiente
 load_dotenv()
 
-# Chaves de API (em produção, use um sistema de gerenciamento de secrets)
+# Chaves de API (serão inicializadas pela função init_api_keys)
 # Formato: {"chave_api_hashed": "role"}
 API_KEYS: Dict[str, str] = {
+    # Valores padrão, serão substituídos pela função init_api_keys
     # Admin key
-    "c2f7abe8b36c45a79b55bd01bc6195eaa95915cda1e786c0839b7c6a3ee15358": "admin",  # your-api-key (hashed)
-    
+    "526ad77089d41f0b24c9c4dbdb1d861173a0b7d12b5da3148ca86c3ae56cd75c": "admin",  # your-api-key (hashed)
+    "074b4cc16ac5a29907bc44f4abf13e5158363416ce10d2cc77fb12252d242ffa": "admin",  # fiap-api-key (hashed)
     # Read-only key
-    "af15639267fb8cf4b3f67d2cf928920f5a7acaa83c1ec7c7e9e724c22e44aeaf": "read-only"  # test-api-key (hashed)
+    "ceb1aaa0d16c8851422baa230eed00417def9c13cb7dfff0c55f257a77dcae9b": "read-only"  # test-api-key (hashed)
 }
 
 # Variável para controle de rate limiting (implementação simples para exemplo)
@@ -139,8 +140,15 @@ async def verify_api_key(
     hashed_key = hash_api_key(key)
     
     # Verificar se a chave existe
+    # Adicionar logs para debug
+    logger.warning(f"API key recebida: {key}")
+    logger.warning(f"Hash gerado: {hashed_key}")
+    logger.warning(f"Chaves disponíveis: {list(API_KEYS.keys())}")
+    
     if hashed_key not in API_KEYS:
-        logger.warning(f"Tentativa de acesso com API Key inválida: {key[:4]}...{key[-4:] if len(key) > 8 else key}")
+        # Usando abordagem segura para evitar erro com None
+        key_info = key[:4] + "..." + key[-4:] if key and len(key) > 8 else key
+        logger.warning(f"Tentativa de acesso com API Key inválida: {key_info}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="API Key inválida"
@@ -149,8 +157,12 @@ async def verify_api_key(
     role = API_KEYS[hashed_key]
     
     # Verificar rate limiting
+    # Aqui sabemos que key não é None porque passamos pela validação anterior
+    assert key is not None
     if not check_rate_limit(key, role):
-        logger.warning(f"Rate limit excedido para API Key: {key[:4]}...{key[-4:] if len(key) > 8 else key}")
+        # Usando abordagem segura para evitar erro com None
+        key_info = key[:4] + "..." + key[-4:] if key and len(key) > 8 else key
+        logger.warning(f"Rate limit excedido para API Key: {key_info}")
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Limite de requisições excedido. Tente novamente em {RATE_LIMIT_WINDOW} segundos."

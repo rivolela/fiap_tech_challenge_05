@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/calicojack/Development/4MLET/fiap_tech_challenge_05/mlruns/168739172432417539/5e93baf4213e4fc6b130e42a043f18a1/artifacts
+end_time: 1758280195440
+entry_point_name: ''
+experiment_id: '168739172432417539'
+lifecycle_stage: active
+run_id: 5e93baf4213e4fc6b130e42a043f18a1
+run_name: modelo-RandomForest
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1758280187689
+status: 3
+tags: []
+user_id: calicojack

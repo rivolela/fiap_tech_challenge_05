@@ -1,0 +1,10 @@
+artifact_location: file:///Users/calicojack/Development/4MLET/fiap_tech_challenge_05/mlruns/168739172432417539/models/m-ced8c194786d4fe8a1a40a64bb14dc60/artifacts
+creation_timestamp: 1758279537664
+experiment_id: '168739172432417539'
+last_updated_timestamp: 1758279541226
+model_id: m-ced8c194786d4fe8a1a40a64bb14dc60
+model_type: null
+name: model
+source_run_id: 22beaff48f6f4ebb9003928bb42c942e
+status: 2
+status_message: null

@@ -186,8 +186,9 @@ def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> D
 def generate_llm_comment(data: pd.DataFrame, prediction: int, probability: float, 
                          vaga_info: Optional[Dict[str, Any]] = None) -> str:
     """
-    Gera um comentário personalizado usando técnicas de LLM simples
-    baseado nos dados do candidato, na predição e nas informações da vaga
+    Gera um comentário personalizado usando técnicas de LLM avançado
+    baseado nos dados do candidato, na predição e nas informações da vaga.
+    Inclui análise detalhada de compatibilidade, pontos fortes e áreas de atenção.
     
     Args:
         data: DataFrame com os dados do candidato
@@ -196,14 +197,35 @@ def generate_llm_comment(data: pd.DataFrame, prediction: int, probability: float
         vaga_info: Informações sobre a vaga (opcional)
         
     Returns:
-        String com comentário personalizado
+        String com comentário personalizado e análise detalhada
     """
+    # Log para diagnóstico
+    print("DEBUG - generate_llm_comment chamado")
+    print(f"DEBUG - data.columns: {data.columns.tolist()}")
+    if 'area_formacao' in data.columns:
+        print(f"DEBUG - area_formacao: '{data['area_formacao'].iloc[0]}', tipo: {type(data['area_formacao'].iloc[0])}")
+    if vaga_info:
+        print(f"DEBUG - vaga_info: {vaga_info}")
+    
     # Extrair informações relevantes
     try:
         idade = data['idade'].iloc[0] if 'idade' in data.columns else None
         experiencia = data['experiencia'].iloc[0] if 'experiencia' in data.columns else None
         educacao = data['educacao'].iloc[0] if 'educacao' in data.columns else None
         area_formacao = data['area_formacao'].iloc[0] if 'area_formacao' in data.columns else None
+        tempo_desempregado = data['tempo_desempregado'].iloc[0] if 'tempo_desempregado' in data.columns else None
+        habilidades = data['habilidades'].iloc[0] if 'habilidades' in data.columns else []
+        cargo_anterior = data['cargo_anterior'].iloc[0] if 'cargo_anterior' in data.columns else None
+        anos_estudo = data['anos_estudo'].iloc[0] if 'anos_estudo' in data.columns else None
+        
+        # Extrair informações da vaga
+        vaga_titulo = vaga_info.get('titulo', '') if vaga_info else ''
+        vaga_area = vaga_info.get('area', '') if vaga_info else ''
+        vaga_senioridade = vaga_info.get('senioridade', '') if vaga_info else ''
+        
+        # Mais logs
+        print(f"DEBUG - area_formacao extraído: '{area_formacao}'")
+        print(f"DEBUG - vaga_area extraído: '{vaga_area}'")
         
         # Mapear nível de confiança baseado na probabilidade
         if probability > 0.9:
@@ -214,38 +236,7 @@ def generate_llm_comment(data: pd.DataFrame, prediction: int, probability: float
             confianca = "moderada"
         else:
             confianca = "baixa"
-        
-        # Base de templates para comentários positivos
-        positive_templates = [
-            "Com base no perfil do candidato, {idade_exp} e {educacao_exp}, há uma {confianca} chance de compatibilidade com a posição{vaga_exp}.",
-            "A análise indica {confianca} adequação ao cargo{vaga_exp}. O candidato possui {experiencia_exp} e {educacao_exp}.",
-            "Recomendamos prosseguir com este candidato que demonstra {confianca} compatibilidade{vaga_exp}, considerando {idade_exp} e {experiencia_exp}.",
-            "A avaliação técnica sugere {confianca} adequação para a função{vaga_exp}. Destaca-se {educacao_exp} e {experiencia_exp}."
-        ]
-        
-        # Base de templates para comentários negativos
-        negative_templates = [
-            "O perfil apresenta {confianca} probabilidade de não atender aos requisitos{vaga_exp}. {educacao_exp} e {experiencia_exp} parecem insuficientes.",
-            "Não recomendado com {confianca} confiança. Considerando {idade_exp} e {experiencia_exp}, pode não atender às expectativas{vaga_exp}.",
-            "Sugerimos avaliar outros candidatos, pois a análise indica {confianca} incompatibilidade{vaga_exp}. {educacao_exp} não atende completamente ao esperado.",
-            "Baseado em {experiencia_exp} e {educacao_exp}, há {confianca} indicação de que o candidato não é adequado para esta posição{vaga_exp}."
-        ]
-        
-        # Construir fragmentos de texto para substituição
-        idade_exp = f"tendo {idade} anos" if idade else "com o perfil etário apresentado"
-        
-        if experiencia is not None:
-            if experiencia < 1:
-                experiencia_exp = "pouca ou nenhuma experiência profissional"
-            elif experiencia < 3:
-                experiencia_exp = f"{experiencia:.1f} anos de experiência inicial"
-            elif experiencia < 6:
-                experiencia_exp = f"{experiencia:.1f} anos de experiência relevante"
-            else:
-                experiencia_exp = f"{experiencia:.1f} anos de experiência sólida"
-        else:
-            experiencia_exp = "experiência profissional não especificada"
-        
+            
         # Mapeamento de educação para texto
         edu_map = {
             "ensino_fundamental": "formação de nível fundamental",
@@ -254,46 +245,139 @@ def generate_llm_comment(data: pd.DataFrame, prediction: int, probability: float
             "pos_graduacao": "pós-graduação"
         }
         
-        if educacao and educacao in edu_map:
-            educacao_exp = edu_map[educacao]
-        else:
-            educacao_exp = "formação acadêmica apresentada"
+        # Construir fragmentos de informação
+        educacao_texto = edu_map.get(educacao, "formação acadêmica") if educacao else "formação não especificada"
+        experiencia_texto = f"{experiencia:.1f} anos" if experiencia is not None else "não especificada"
+        
+        # Análise de compatibilidade de área
+        match_area = False
+        print(f"DEBUG - Verificando match de área. area_formacao: '{area_formacao}', vaga_area: '{vaga_area}'")
+        
+        # Primeiro, garantir que as strings são strings válidas e não "string" ou "None"
+        if area_formacao is not None and isinstance(area_formacao, str):
+            area_formacao = area_formacao.strip()
+            if area_formacao.lower() in ["string", "none", ""]:
+                area_formacao = None
+                
+        if vaga_area is not None and isinstance(vaga_area, str):
+            vaga_area = vaga_area.strip()
+            if vaga_area.lower() in ["string", "none", ""]:
+                vaga_area = None
+                
+        print(f"DEBUG - Após sanitização: area_formacao: '{area_formacao}', vaga_area: '{vaga_area}'")
+        
+        if area_formacao is not None and vaga_area is not None:
+            match_area = (area_formacao.lower() == vaga_area.lower() or 
+                         area_formacao.lower() in vaga_area.lower() or 
+                         vaga_area.lower() in area_formacao.lower())
+            print(f"DEBUG - Resultado do match: {match_area}")
             
-        if area_formacao:
-            educacao_exp += f" na área de {area_formacao}"
-            
-        # Adicionar informações da vaga, se disponíveis
-        if vaga_info and 'titulo' in vaga_info and vaga_info['titulo']:
-            vaga_exp = f" de {vaga_info['titulo']}"
-            if 'area' in vaga_info and vaga_info['area']:
-                vaga_exp += f" na área de {vaga_info['area']}"
-            if 'senioridade' in vaga_info and vaga_info['senioridade']:
-                vaga_exp += f", nível {vaga_info['senioridade']}"
-        else:
-            vaga_exp = ""
-            
-        # Selecionar template baseado na predição
+        # Análise de senioridade
+        senioridade_adequada = True
+        razao_senioridade = ""
+        
+        if vaga_senioridade and experiencia is not None:
+            if vaga_senioridade.lower() in ['senior', 'sênior'] and experiencia < 6:
+                senioridade_adequada = False
+                razao_senioridade = f"A vaga requer senioridade senior, mas o candidato possui {experiencia_texto} de experiência (geralmente esperado 6+ anos)."
+            elif vaga_senioridade.lower() in ['pleno', 'pl'] and experiencia < 3:
+                senioridade_adequada = False
+                razao_senioridade = f"A vaga requer senioridade pleno, mas o candidato possui {experiencia_texto} de experiência (geralmente esperado 3+ anos)."
+            elif vaga_senioridade.lower() in ['junior', 'jr'] and experiencia > 5:
+                senioridade_adequada = True
+                razao_senioridade = f"O candidato possui {experiencia_texto} de experiência, superior ao geralmente esperado para uma vaga junior."
+        
+        # Gerar análise detalhada
         if prediction == 1:
-            template = random.choice(positive_templates)
-        else:
-            template = random.choice(negative_templates)
+            # Comentário positivo com análise detalhada
+            pontos_positivos = []
+            if match_area:
+                if area_formacao is not None and vaga_area is not None:
+                    pontos_positivos.append(f"Formação em {area_formacao} compatível com a área da vaga ({vaga_area})")
+                else:
+                    pontos_positivos.append("Perfil profissional alinhado com os requisitos da vaga")
+            if experiencia is not None and experiencia > 3:
+                pontos_positivos.append(f"Experiência sólida de {experiencia_texto}")
+            if tempo_desempregado is not None and tempo_desempregado < 0.5:
+                pontos_positivos.append("Curto período sem emprego, indicando atualização profissional")
+            if len(habilidades) > 0:
+                habs_texto = ", ".join(habilidades[:3])
+                pontos_positivos.append(f"Competências relevantes: {habs_texto}")
             
-        # Preencher o template com os dados
-        comment = template.format(
-            idade_exp=idade_exp,
-            experiencia_exp=experiencia_exp,
-            educacao_exp=educacao_exp,
-            confianca=confianca,
-            vaga_exp=vaga_exp
-        )
-        
-        # Usar TextBlob para melhorar um pouco o texto (correção e fluência)
-        comment_blob = TextBlob(comment)
-        
-        # Aqui seria o ponto onde poderíamos chamar um LLM mais sofisticado
-        # para melhorar a qualidade e naturalidade do comentário
-        
-        return str(comment_blob)
+            pontos_atencao = []
+            if not match_area:
+                pontos_atencao.append(f"Formação em {area_formacao} diferente da área da vaga ({vaga_area})")
+            if not senioridade_adequada:
+                pontos_atencao.append(razao_senioridade)
+                
+            # Construir o texto da análise
+            analise = f"Análise indica {confianca} compatibilidade com a vaga"
+            if vaga_titulo:
+                analise += f" de {vaga_titulo}"
+            if vaga_area:
+                analise += f" na área de {vaga_area}"
+            if vaga_senioridade:
+                analise += f", nível {vaga_senioridade}"
+            analise += ".\n\n"
+            
+            if pontos_positivos:
+                analise += "Pontos fortes:\n"
+                for ponto in pontos_positivos:
+                    analise += f"• {ponto}\n"
+                analise += "\n"
+                
+            if pontos_atencao:
+                analise += "Áreas de atenção:\n"
+                for ponto in pontos_atencao:
+                    analise += f"• {ponto}\n"
+                    
+            return analise.strip()
+            
+        else:
+            # Comentário negativo com análise detalhada
+            razoes_negativas = []
+            
+            if not match_area:
+                # Verificar se ambos estão definidos antes de adicionar esta razão
+                if area_formacao is not None and vaga_area is not None:
+                    area_form_texto = area_formacao
+                    area_vaga_texto = vaga_area
+                    razoes_negativas.append(f"Incompatibilidade entre a formação do candidato ({area_form_texto}) e a área da vaga ({area_vaga_texto})")
+                elif area_formacao is None and vaga_area is not None:
+                    razoes_negativas.append(f"Candidato não especificou área de formação para vaga na área de {vaga_area}")
+                elif area_formacao is not None and vaga_area is None:
+                    razoes_negativas.append(f"Candidato com formação em {area_formacao}, mas área da vaga não especificada")
+            
+            if not senioridade_adequada:
+                razoes_negativas.append(razao_senioridade)
+                
+            if experiencia is not None and experiencia < 2:
+                razoes_negativas.append(f"Experiência limitada de apenas {experiencia_texto}")
+                
+            if tempo_desempregado is not None and tempo_desempregado > 1:
+                razoes_negativas.append(f"Período de {tempo_desempregado:.1f} anos sem emprego formal na área")
+            
+            # Construir o texto da análise
+            analise = f"O perfil apresenta {confianca} probabilidade de não atender completamente aos requisitos"
+            if vaga_titulo:
+                analise += f" da posição de {vaga_titulo}"
+            if vaga_area:
+                analise += f" na área de {vaga_area}"
+            if vaga_senioridade:
+                analise += f", nível {vaga_senioridade}"
+            analise += ".\n\n"
+            
+            if razoes_negativas:
+                analise += "Principais considerações:\n"
+                for razao in razoes_negativas:
+                    analise += f"• {razao}\n"
+                    
+            if prediction == 0 and probability < 0.3:
+                analise += "\nSugerimos avaliar outros candidatos mais alinhados com os requisitos da posição."
+            elif prediction == 0 and probability >= 0.3:
+                analise += "\nApesar da recomendação negativa, o candidato possui alguns pontos que podem ser considerados em uma segunda análise, caso não haja outros candidatos adequados."
+                
+            return analise.strip()
         
     except Exception as e:
         # Em caso de erro, retornar um comentário genérico
