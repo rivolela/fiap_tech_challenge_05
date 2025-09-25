@@ -25,8 +25,7 @@ services:
   monitoring-dashboard:
     build: 
       context: .
-      dockerfile: Dockerfile
-    command: streamlit run src/dashboard/dashboard.py --server.port=8501 --server.address=0.0.0.0
+      dockerfile: Dockerfile.dashboard
     ports:
       - "8502:8501"  # Mudado para 8502 externamente
     environment:
