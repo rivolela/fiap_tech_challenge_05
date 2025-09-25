@@ -17,7 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar código do projeto
 COPY src/ ./src/
 COPY models/ ./models/
-COPY data/processed/ ./data/processed/
+# Criar diretório de dados processados (pode estar vazio ou não existir)
+RUN mkdir -p ./data/processed/
+# Copiar scripts
 COPY scripts/ ./scripts/
 
 # Criar diretório para logs e métricas de monitoramento
