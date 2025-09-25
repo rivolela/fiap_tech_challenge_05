@@ -18,6 +18,7 @@ services:
     volumes:
       - ./logs:/opt/render/project/logs
       - ./metrics:/opt/render/project/metrics
+      - ./data/processed:/opt/render/project/data/processed
     restart: unless-stopped
 
   monitoring-dashboard:
@@ -33,6 +34,7 @@ services:
       API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
     volumes:
       - ./metrics:/opt/render/project/metrics
+      - ./data/processed:/opt/render/project/data/processed
     depends_on:
       - scoring-api
     restart: unless-stopped
