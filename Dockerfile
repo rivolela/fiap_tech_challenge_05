@@ -38,10 +38,17 @@ EXPOSE 8000 8501
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:$PORT/health || exit 1
 
-# Criar script de inicialização
+# Criar script de inicialização com configurações otimizadas
 RUN echo '#!/bin/bash\n\
-# Iniciar API\n\
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT src.api.scoring_api:app\n\
+# Configurar limites de recursos\n\
+export PYTHONHASHSEED=random\n\
+export PYTHONDONTWRITEBYTECODE=1\n\
+export PYTHONUNBUFFERED=1\n\
+# Iniciar API com configurações otimizadas\n\
+gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT \
+--timeout 120 --graceful-timeout 60 --keep-alive 5 --max-requests 1000 \
+--max-requests-jitter 50 --worker-tmp-dir /dev/shm \
+--log-level debug src.api.scoring_api:app\n\
 ' > /opt/render/project/src/start.sh && chmod +x /opt/render/project/src/start.sh
 
 # Iniciar API com Gunicorn para produção

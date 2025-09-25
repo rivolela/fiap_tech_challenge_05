@@ -28,6 +28,10 @@ from src.monitoring.metrics_store import (
     get_recent_predictions,
     METRICS_FILE
 )
+
+# Configuração para chamadas à API
+API_URL = os.environ.get("API_URL", "http://localhost:8000")
+API_KEY = os.environ.get("API_KEY", "")  # Deve ser configurado no ambiente
 from src.monitoring.drift_detector import (
     get_latest_drift_report,
     visualize_feature_drift,
@@ -45,6 +49,10 @@ st.set_page_config(
 # Inicializar variáveis de sessão
 if 'last_refresh' not in st.session_state:
     st.session_state.last_refresh = datetime.datetime.now()
+if 'pipeline_running' not in st.session_state:
+    st.session_state.pipeline_running = False
+if 'pipeline_start_time' not in st.session_state:
+    st.session_state.pipeline_start_time = None
 
 # Função para formatar timestamp
 def format_timestamp(timestamp_str):
@@ -61,12 +69,38 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Botão de atualizar
+    # Botão de atualizar dados
     if st.button("🔄 Atualizar Dados"):
         st.session_state.last_refresh = datetime.datetime.now()
         st.success("Dados atualizados!")
     
+    # Botão para executar o pipeline de treinamento
+    if st.button("🔄 Treinar Modelo"):
+        try:
+            # Endpoint da API para executar o pipeline
+            api_url = "http://localhost:8000/monitoring/run-pipeline"
+            
+            # API key para autenticação (deve ter permissão admin)
+            headers = {"X-API-Key": "local-api-key"}
+            
+            # Chamar o endpoint
+            with st.spinner("Iniciando o pipeline de treinamento..."):
+                response = requests.post(api_url, headers=headers)
+                
+                if response.status_code == 202:
+                    st.success("Pipeline de treinamento iniciado! Este processo pode levar alguns minutos.")
+                    st.info("O dashboard será atualizado automaticamente quando o treinamento for concluído.")
+                    st.session_state.pipeline_running = True
+                else:
+                    st.error(f"Erro ao iniciar pipeline: {response.text}")
+        except Exception as e:
+            st.error(f"Erro ao conectar com a API: {str(e)}")
+    
     st.markdown(f"Última atualização: {st.session_state.last_refresh.strftime('%H:%M:%S')}")
+    
+    # Se o pipeline estiver em execução, mostrar uma mensagem
+    if st.session_state.get('pipeline_running', False):
+        st.warning("Pipeline de treinamento em execução... Os dados serão atualizados quando concluído.")
     
     st.markdown("---")
     
@@ -568,6 +602,80 @@ elif page == "Predições Recentes":
     show_recent_predictions()
 
 # Footer
+st.markdown("---")
+
+# Seção para executar o pipeline de treinamento
+st.sidebar.markdown("## Administração do Modelo")
+
+# Função para verificar o status do pipeline
+def check_pipeline_status():
+    try:
+        response = requests.get(
+            f"{API_URL}/monitoring/pipeline-status",
+            headers={"X-API-Key": API_KEY},
+            timeout=5
+        )
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"running": False, "error": f"Erro ao verificar status: {response.status_code}"}
+    except Exception as e:
+        return {"running": False, "error": f"Erro ao comunicar com API: {str(e)}"}
+
+# Função para iniciar o pipeline de treinamento
+def run_training_pipeline():
+    try:
+        with st.spinner('Iniciando pipeline de treinamento...'):
+            response = requests.post(
+                f"{API_URL}/monitoring/run-pipeline",
+                headers={"X-API-Key": API_KEY},
+                timeout=10
+            )
+            if response.status_code == 200:
+                st.success("Pipeline de treinamento iniciado com sucesso!")
+                time.sleep(2)  # Aguardar um pouco para garantir que o status seja atualizado
+                return True
+            else:
+                st.error(f"Erro ao iniciar pipeline: {response.text}")
+                return False
+    except Exception as e:
+        st.error(f"Erro ao comunicar com API: {str(e)}")
+        return False
+
+# Botão para executar o pipeline de treinamento
+if st.sidebar.button("🔄 Treinar Modelo", key="train_model"):
+    success = run_training_pipeline()
+    if success:
+        st.sidebar.info("Pipeline iniciado! Verifique o status abaixo.")
+
+# Verificar e mostrar status do pipeline
+status = check_pipeline_status()
+
+if "error" in status:
+    st.sidebar.warning(f"Não foi possível obter status do pipeline: {status['error']}")
+elif status.get("running", False):
+    start_time = datetime.datetime.fromisoformat(status.get("start_time", ""))
+    duration = datetime.datetime.now() - start_time
+    minutes, seconds = divmod(duration.seconds, 60)
+    
+    st.sidebar.warning(f"⚙️ Pipeline em execução há {minutes}m {seconds}s...")
+    
+    # Atualizar automaticamente a cada 15 segundos
+    st.sidebar.button("Atualizar Status")
+    time.sleep(0.1)  # Pequena pausa para evitar problemas de UI
+    st.experimental_rerun()
+    
+elif status.get("end_time"):
+    if status.get("success", False):
+        st.sidebar.success("✅ Último treinamento concluído com sucesso")
+    else:
+        st.sidebar.error("❌ Último treinamento falhou")
+        
+    if "output_summary" in status:
+        st.sidebar.info(f"Output: {status['output_summary']['stdout_lines']} linhas stdout, {status['output_summary']['stderr_lines']} linhas stderr")
+else:
+    st.sidebar.info("Pipeline não iniciado ou status desconhecido")
+
 st.markdown("---")
 st.markdown("Decision Scoring Dashboard © 2025")
 st.markdown("Desenvolvido para monitoramento contínuo de performance e drift do modelo.")

@@ -17,8 +17,9 @@ services:
       LOG_FILE: "/opt/render/project/logs/api_logs.log"
     volumes:
       - ./logs:/opt/render/project/logs
-      - ./metrics:/opt/render/project/metrics
+      - ./data/monitoring:/opt/render/project/data/monitoring
       - ./data/processed:/opt/render/project/data/processed
+      - ./data/insights:/opt/render/project/data/insights
     restart: unless-stopped
 
   monitoring-dashboard:
@@ -33,8 +34,9 @@ services:
       API_KEY_SALT: "salt-secreto-desenvolvimento-local"
       API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
     volumes:
-      - ./metrics:/opt/render/project/metrics
+      - ./data/monitoring:/opt/render/project/data/monitoring
       - ./data/processed:/opt/render/project/data/processed
+      - ./data/insights:/opt/render/project/data/insights
     depends_on:
       - scoring-api
     restart: unless-stopped

@@ -8,9 +8,13 @@ services:
     plan: free
     branch: main
     dockerfilePath: ./Dockerfile
-    startCommand: python scripts/debug_paths.py && gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT src.api.scoring_api:app
+    startCommand: python scripts/check_memory.py && gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --timeout 120 --graceful-timeout 60 --keep-alive 5 --log-level debug src.api.scoring_api:app
     healthCheckPath: /health
     envVars:
+      - key: PYTHON_UNBUFFERED
+        value: "1"
+      - key: WEB_CONCURRENCY
+        value: "2"
       - key: PORT
         value: 8000
     autoDeploy: true

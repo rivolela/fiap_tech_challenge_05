@@ -6,10 +6,18 @@
 echo "=== PIPELINE DE TREINAMENTO COM MLFLOW ==="
 echo "Verificando ambiente..."
 
+# Configurar limites de recursos para evitar problemas de memória
+export PYTHONUNBUFFERED=1
+export PYTHONMEMORY=536870912  # 512MB
+export PYTHONGC=1
+export PYTHONRECURSIONLIMIT=1000
+
 # Ativar ambiente virtual se existir
 if [ -d ".venv" ]; then
     source .venv/bin/activate
     echo "✅ Ambiente virtual ativado"
+elif [ -f "/opt/render/project/src/start.sh" ]; then
+    echo "✅ Executando no ambiente Render, continuando..."
 else
     echo "⚠️ Ambiente virtual não encontrado. Executando setup..."
     bash scripts/setup.sh
@@ -135,6 +143,15 @@ if python src/models/train_simple.py $TRAIN_ARGS; then
 else
     echo "❌ Erro no treinamento do modelo"
     exit 1
+fi
+
+echo
+echo "🔄 Atualizando métricas para monitoramento..."
+# Atualizar métricas de monitoramento para o dashboard
+if python scripts/update_monitoring_metrics.py; then
+    echo "✅ Métricas de monitoramento atualizadas"
+else
+    echo "⚠️ Falha ao atualizar métricas de monitoramento"
 fi
 
 echo
