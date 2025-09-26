@@ -32,6 +32,8 @@ services:
       PYTHONPATH: "/opt/render/project/src"
       API_KEY_SALT: "salt-secreto-desenvolvimento-local"
       API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
+      API_URL: "http://scoring-api:8000"
+      API_KEY: "local-api-key"
     volumes:
       - ./data/monitoring:/opt/render/project/data/monitoring
       - ./data/processed:/opt/render/project/data/processed
