@@ -112,7 +112,9 @@ with st.sidebar:
                         "tempo_empresa_atual": round(random.uniform(0.005, 0.02), 3),
                         "distancia_empresa": round(random.uniform(0.01, 0.03), 3)
                     },
-                    "performance_metrics": new_metrics
+                    "performance_metrics": new_metrics,
+                    "n_samples_analyzed": random.randint(120, 180),  # Número simulado de amostras analisadas
+                    "features_analyzed": 5  # Número de features no dicionário feature_drift
                 }
                 
                 # Atualizar o relatório de drift
@@ -694,7 +696,9 @@ def run_training_pipeline():
                     "tempo_empresa_atual": round(random.uniform(0.005, 0.02), 3),
                     "distancia_empresa": round(random.uniform(0.01, 0.03), 3)
                 },
-                "performance_metrics": new_metrics
+                "performance_metrics": new_metrics,
+                "n_samples_analyzed": random.randint(120, 180),  # Número simulado de amostras analisadas
+                "features_analyzed": 5  # Número de features no dicionário feature_drift
             }
             
             # Atualizar o relatório de drift
