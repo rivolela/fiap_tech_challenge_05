@@ -66,19 +66,27 @@ possible_log_dirs = [
     "/opt/render/project/src/data/logs"
 ]
 
+# Tentar criar todos os diretórios de logs com permissões amplas
 for log_dir in possible_log_dirs:
     try:
         os.makedirs(log_dir, exist_ok=True)
-        print(f"Diretório de logs criado/verificado: {log_dir}")
+        # Definir permissões amplas para permitir escrita por qualquer usuário
+        try:
+            os.chmod(log_dir, 0o777)  # permissões 777 (leitura, escrita e execução para todos)
+            print(f"Diretório de logs criado/verificado com permissões amplas: {log_dir}")
+        except Exception as perm_err:
+            print(f"Aviso: Não foi possível definir permissões para {log_dir}: {perm_err}")
     except Exception as e:
         print(f"Aviso: Não foi possível criar diretório {log_dir}: {e}")
 
 # Verificar se o log_file tem caminho absoluto, se não, tentar caminhos alternativos
 if not os.path.isabs(log_file):
+    # Garantir que usamos sempre o mesmo arquivo de log em ambiente local
+    # Priorizar o arquivo na pasta logs/ na raiz do projeto
     possible_log_files = [
-        log_file,
-        f"/opt/render/project/logs/{os.path.basename(log_file)}",
-        f"logs/{os.path.basename(log_file)}",
+        "logs/api_logs.log",  # Arquivo padrão na pasta logs
+        log_file,  # Usar o valor original da variável de ambiente
+        f"/opt/render/project/logs/{os.path.basename(log_file)}",  # Opções para o Render
         f"/opt/render/project/src/logs/{os.path.basename(log_file)}"
     ]
     
@@ -87,8 +95,22 @@ if not os.path.isabs(log_file):
             log_dir = os.path.dirname(possible_file)
             if log_dir:  # Se o diretório não for vazio
                 os.makedirs(log_dir, exist_ok=True)
+                # Definir permissões amplas para o diretório
+                try:
+                    os.chmod(log_dir, 0o777)
+                except Exception:
+                    pass
+            
+            # Tentar criar/abrir o arquivo
             with open(possible_file, 'a') as f:
                 f.write(f"Log inicializado em {datetime.datetime.now()}\n")
+            
+            # Definir permissões amplas para o arquivo
+            try:
+                os.chmod(possible_file, 0o666)  # permissões 666 (leitura e escrita para todos)
+            except Exception:
+                pass
+                
             print(f"✅ Arquivo de log configurado com sucesso: {possible_file}")
             log_file = possible_file
             break
@@ -97,10 +119,27 @@ if not os.path.isabs(log_file):
 else:
     # Garantir que o diretório do log_file existe
     try:
-        os.makedirs(os.path.dirname(log_file), exist_ok=True)
-        print(f"Diretório para log_file criado: {os.path.dirname(log_file)}")
+        log_dir = os.path.dirname(log_file)
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # Definir permissões amplas para o diretório
+        try:
+            os.chmod(log_dir, 0o777)
+        except Exception:
+            pass
+            
+        print(f"Diretório para log_file criado: {log_dir}")
+        
+        # Criar/abrir o arquivo
         with open(log_file, 'a') as f:
             f.write(f"Log inicializado em {datetime.datetime.now()}\n")
+        
+        # Definir permissões amplas para o arquivo
+        try:
+            os.chmod(log_file, 0o666)
+        except Exception:
+            pass
+            
         print(f"✅ Arquivo de log configurado com sucesso: {log_file}")
     except Exception as e:
         print(f"❌ Não foi possível acessar o arquivo de log configurado: {e}")
@@ -109,6 +148,10 @@ else:
         try:
             with open(log_file, 'a') as f:
                 f.write(f"Log inicializado em {datetime.datetime.now()} (fallback)\n")
+            try:
+                os.chmod(log_file, 0o666)
+            except Exception:
+                pass
             print(f"✅ Usando arquivo de log alternativo: {log_file}")
         except Exception as alt_error:
             print(f"❌ Todas as tentativas de configuração de log falharam: {alt_error}")

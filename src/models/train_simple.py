@@ -17,6 +17,8 @@ import pickle
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+import datetime
+import time
 from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
@@ -47,6 +49,31 @@ except ImportError:
 EXPERIMENT_NAME = "Decision-Scoring-Model"
 # Configurar o MLflow para usar armazenamento local
 os.environ["MLFLOW_TRACKING_URI"] = "file:./mlruns"
+
+def generate_random_seed():
+    """
+    Gera uma semente aleatória baseada no timestamp atual para
+    garantir diferentes resultados entre execuções do modelo.
+    
+    Returns:
+        int: Semente aleatória entre 1 e 100000
+    """
+    return int((time.time() * 1000) % 100000)
+
+def generate_run_name(model_type):
+    """
+    Gera um nome único para a execução do MLflow baseado no timestamp,
+    tipo de modelo e um identificador aleatório.
+    
+    Args:
+        model_type: Tipo do modelo usado (RandomForest, GradientBoosting, etc)
+        
+    Returns:
+        str: Nome único para a execução
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    random_id = str(int(time.time() * 1000) % 10000)
+    return f"{model_type}-{timestamp}-{random_id}"
 
 
 def load_data(data_path='data/processed/complete_processed_data.csv', target='target_sucesso'):
@@ -289,7 +316,7 @@ def balance_training_data(X_train, y_train):
 
 
 def train_scoring_model(X_train, y_train, X_val, y_val, X_test, y_test, feature_groups, 
-                        model_type="RandomForest", use_cv=True, n_cv_folds=5):
+                        model_type="RandomForest", use_cv=True, n_cv_folds=5, random_state=None):
     """
     Treina um modelo de scoring para prever a probabilidade de sucesso na contratação
     com rastreamento de experimentos através do MLflow.
@@ -298,6 +325,9 @@ def train_scoring_model(X_train, y_train, X_val, y_val, X_test, y_test, feature_
     - Validação cruzada (opcional)
     - Balanceamento aplicado apenas nos dados de treino
     - Visualização das features mais importantes para análise
+    
+    O random_state pode ser fornecido ou será gerado com base no timestamp
+    para garantir diferentes resultados entre execuções.
     
     Args:
         X_train, y_train: Dados de treinamento
@@ -337,20 +367,33 @@ def train_scoring_model(X_train, y_train, X_val, y_val, X_test, y_test, feature_
         ]
     )
     
-    # Selecionar o modelo de classificação
+    # Gerar random_state se não foi fornecido
+    if random_state is None:
+        random_state = generate_random_seed()
+    
+    print(f"🎲 Usando random_state: {random_state}")
+    
+    # Introduzir variabilidade nos hiperparâmetros baseados no random_state
+    n_estimators = 80 + (random_state % 50)  # Entre 80 e 129
+    max_depth_options = [None, 5, 10, 15, 20]
+    max_depth = max_depth_options[random_state % len(max_depth_options)]
+    min_samples_split = 2 + (random_state % 5)  # Entre 2 e 6
+    
+    # Selecionar o modelo de classificação com o random_state variável
     if model_type == "GradientBoosting":
-        classifier = GradientBoostingClassifier(random_state=42)
+        learning_rate = 0.05 + ((random_state % 20) / 100)  # Entre 0.05 e 0.24
+        classifier = GradientBoostingClassifier(random_state=random_state)
         model_params = {
-            'classifier__n_estimators': 100,
-            'classifier__learning_rate': 0.1,
-            'classifier__max_depth': 3
+            'classifier__n_estimators': n_estimators,
+            'classifier__learning_rate': learning_rate,
+            'classifier__max_depth': 3 + (random_state % 5)  # Entre 3 e 7
         }
     else:  # RandomForest
-        classifier = RandomForestClassifier(random_state=42)
+        classifier = RandomForestClassifier(random_state=random_state)
         model_params = {
-            'classifier__n_estimators': 100,
-            'classifier__max_depth': None,
-            'classifier__min_samples_split': 2
+            'classifier__n_estimators': n_estimators,
+            'classifier__max_depth': max_depth,
+            'classifier__min_samples_split': min_samples_split
         }
     
     # Criar um pipeline que combina preprocessador e modelo
@@ -364,7 +407,9 @@ def train_scoring_model(X_train, y_train, X_val, y_val, X_test, y_test, feature_
         try:
             mlflow.set_experiment(EXPERIMENT_NAME)
             
-            with mlflow.start_run(run_name=f"modelo-{model_type}") as run:
+            # Usar nome de run único baseado no timestamp e random_state
+            run_name = generate_run_name(model_type)
+            with mlflow.start_run(run_name=run_name) as run:
                 # Registrar parâmetros
                 for param_name, param_value in model_params.items():
                     mlflow.log_param(param_name, param_value)
@@ -395,13 +440,16 @@ def train_scoring_model(X_train, y_train, X_val, y_val, X_test, y_test, feature_
                 val_recall = recall_score(y_val, val_pred)
                 val_avg_precision = average_precision_score(y_val, val_proba)
                 
-                # Registrar métricas de validação
-                mlflow.log_metric("val_auc", val_auc)
-                mlflow.log_metric("val_accuracy", val_acc)
-                mlflow.log_metric("val_f1", val_f1)
-                mlflow.log_metric("val_precision", val_precision)
-                mlflow.log_metric("val_recall", val_recall)
-                mlflow.log_metric("val_avg_precision", val_avg_precision)
+                # Registrar métricas de validação - converter para float para evitar problemas de tipo
+                mlflow.log_metric("val_auc", float(val_auc))
+                mlflow.log_metric("val_accuracy", float(val_acc))
+                mlflow.log_metric("val_f1", float(val_f1))
+                mlflow.log_metric("val_precision", float(val_precision))
+                mlflow.log_metric("val_recall", float(val_recall))
+                mlflow.log_metric("val_avg_precision", float(val_avg_precision))
+                
+                # Registrar o random_state usado como parâmetro
+                mlflow.log_param("random_state", random_state)
                 
                 # Exibir métricas de validação
                 print(f"\n📊 Performance no conjunto de validação:")
@@ -422,13 +470,13 @@ def train_scoring_model(X_train, y_train, X_val, y_val, X_test, y_test, feature_
                 test_recall = recall_score(y_test, test_pred)
                 test_avg_precision = average_precision_score(y_test, test_proba)
                 
-                # Registrar métricas de teste
-                mlflow.log_metric("test_auc", test_auc)
-                mlflow.log_metric("test_accuracy", test_acc)
-                mlflow.log_metric("test_f1", test_f1)
-                mlflow.log_metric("test_precision", test_precision)
-                mlflow.log_metric("test_recall", test_recall)
-                mlflow.log_metric("test_avg_precision", test_avg_precision)
+                # Registrar métricas de teste - converter para float para evitar problemas de tipo
+                mlflow.log_metric("test_auc", float(test_auc))
+                mlflow.log_metric("test_accuracy", float(test_acc))
+                mlflow.log_metric("test_f1", float(test_f1))
+                mlflow.log_metric("test_precision", float(test_precision))
+                mlflow.log_metric("test_recall", float(test_recall))
+                mlflow.log_metric("test_avg_precision", float(test_avg_precision))
                 
                 # Exibir métricas de teste
                 print(f"\n📊 Performance final no conjunto de teste:")
@@ -461,7 +509,13 @@ def train_scoring_model(X_train, y_train, X_val, y_val, X_test, y_test, feature_
                 mlflow.log_artifact(cm_path)
                 
                 # Registrar o modelo no MLflow
-                mlflow.sklearn.log_model(model, "model")
+                # Correção para o erro "sklearn" is not exported from module "mlflow"
+                try:
+                    mlflow.sklearn.log_model(model, "model")
+                except AttributeError:
+                    # Fallback para versões diferentes do MLflow
+                    from mlflow import sklearn as mlflow_sklearn
+                    mlflow_sklearn.log_model(model, "model")
                 
                 # Salvar relatório de classificação
                 report = classification_report(y_test, test_pred, output_dict=True)
@@ -671,6 +725,7 @@ def main():
     parser.add_argument("--cv-folds", type=int, default=5, help="Número de folds para validação cruzada")
     parser.add_argument("--model", type=str, default="RandomForest", choices=["RandomForest", "GradientBoosting"], 
                         help="Algoritmo a ser usado")
+    parser.add_argument("--random-seed", type=int, help="Semente aleatória para reprodutibilidade (se omitido, será gerada uma nova a cada execução)")
     
     args = parser.parse_args()
     
@@ -681,6 +736,7 @@ def main():
     n_cv_folds = args.cv_folds
     compare_models_flag = args.compare
     model_type = args.model
+    random_state = args.random_seed  # Pode ser None, o que irá gerar uma semente aleatória
     
     try:
         # Carregar e preparar dados
@@ -711,10 +767,12 @@ def main():
             )
         else:
             # Treinar um único modelo
+            # Se random_state é None, será gerada uma semente aleatória dentro da função
             model = train_scoring_model(
                 X_train, y_train, X_val, y_val, X_test, y_test, 
                 feature_groups, model_type=model_type,
-                use_cv=use_cv, n_cv_folds=n_cv_folds
+                use_cv=use_cv, n_cv_folds=n_cv_folds,
+                random_state=random_state
             )
             
             # Visualizar importância de features
