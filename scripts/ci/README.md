@@ -25,6 +25,27 @@ Se não for fornecida uma mensagem de commit, o script tentará gerar automatica
 feat(api): adiciona validação de entrada nos endpoints de scoring
 ```
 
+### 2. generate_commit_message.sh
+
+Script específico para gerar automaticamente mensagens de commit baseadas nas alterações, usando um modelo LLM (GPT).
+
+**Uso:**
+```bash
+./generate_commit_message.sh
+```
+
+**Funcionalidades:**
+- Analisa as alterações no repositório git (staged e unstaged)
+- Gera uma mensagem de commit no formato Conventional Commits
+- Permite aceitar a mensagem e fazer commit diretamente
+- Se rejeitada, copia a mensagem para a área de transferência
+
+**Requisitos:**
+- Arquivo `.env` na raiz do projeto com a variável `OPENAI_API_KEY` definida
+- Conexão com a internet para acessar a API do OpenAI
+
+### 3. deploy.sh
+
 **Funcionalidades:**
 - Executa os testes do projeto
 - Faz commit das alterações com a mensagem fornecida
