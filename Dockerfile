@@ -44,6 +44,11 @@ RUN echo '#!/bin/bash\n\
 export PYTHONHASHSEED=random\n\
 export PYTHONDONTWRITEBYTECODE=1\n\
 export PYTHONUNBUFFERED=1\n\
+# Garantir que diretórios de logs existem e têm permissões adequadas\n\
+mkdir -p /opt/render/project/logs /opt/render/project/metrics /opt/render/project/src/data/logs /opt/render/project/src/logs logs\n\
+chmod -R 777 /opt/render/project/logs /opt/render/project/src/logs /opt/render/project/src/data/logs logs\n\
+touch /opt/render/project/logs/api_logs.log\n\
+chmod 666 /opt/render/project/logs/api_logs.log\n\
 # Iniciar API com configurações otimizadas\n\
 gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT \
 --timeout 120 --graceful-timeout 60 --keep-alive 5 --max-requests 1000 \

@@ -56,8 +56,40 @@ load_dotenv()
 # Configurar logging
 log_file = os.getenv("LOG_FILE", "logs/api_logs.log")
 
-# Garantir que o diretório de logs existe
-os.makedirs(os.path.dirname(log_file), exist_ok=True)
+# Verificar e criar múltiplos diretórios possíveis para logs
+possible_log_dirs = [
+    "logs",
+    "data/logs",
+    "/opt/render/project/logs",
+    "/opt/render/project/src/logs",
+    "/opt/render/project/src/data/logs"
+]
+
+for log_dir in possible_log_dirs:
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+        print(f"Diretório de logs criado/verificado: {log_dir}")
+    except Exception as e:
+        print(f"Aviso: Não foi possível criar diretório {log_dir}: {e}")
+
+# Garantir que o diretório do log_file existe
+try:
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    print(f"Diretório para log_file criado: {os.path.dirname(log_file)}")
+except Exception as e:
+    print(f"Aviso: Não foi possível criar diretório para log_file: {e}")
+
+# Tentar criar o arquivo de log
+try:
+    with open(log_file, 'a'):
+        pass
+    print(f"Arquivo de log verificado: {log_file}")
+except Exception as e:
+    print(f"Aviso: Não foi possível acessar o arquivo de log: {e}")
+    # Tentar usar um log alternativo
+    alternative_log = "api_logs.log"
+    print(f"Tentando usar log alternativo: {alternative_log}")
+    log_file = alternative_log
 
 logging.basicConfig(
     level=logging.INFO,
