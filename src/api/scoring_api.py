@@ -55,6 +55,7 @@ load_dotenv()
 
 # Configurar logging
 log_file = os.getenv("LOG_FILE", "logs/api_logs.log")
+print(f"LOG_FILE configurado inicialmente como: {log_file}")
 
 # Verificar e criar múltiplos diretórios possíveis para logs
 possible_log_dirs = [
@@ -72,24 +73,48 @@ for log_dir in possible_log_dirs:
     except Exception as e:
         print(f"Aviso: Não foi possível criar diretório {log_dir}: {e}")
 
-# Garantir que o diretório do log_file existe
-try:
-    os.makedirs(os.path.dirname(log_file), exist_ok=True)
-    print(f"Diretório para log_file criado: {os.path.dirname(log_file)}")
-except Exception as e:
-    print(f"Aviso: Não foi possível criar diretório para log_file: {e}")
+# Verificar se o log_file tem caminho absoluto, se não, tentar caminhos alternativos
+if not os.path.isabs(log_file):
+    possible_log_files = [
+        log_file,
+        f"/opt/render/project/logs/{os.path.basename(log_file)}",
+        f"logs/{os.path.basename(log_file)}",
+        f"/opt/render/project/src/logs/{os.path.basename(log_file)}"
+    ]
+    
+    for possible_file in possible_log_files:
+        try:
+            log_dir = os.path.dirname(possible_file)
+            if log_dir:  # Se o diretório não for vazio
+                os.makedirs(log_dir, exist_ok=True)
+            with open(possible_file, 'a') as f:
+                f.write(f"Log inicializado em {datetime.datetime.now()}\n")
+            print(f"✅ Arquivo de log configurado com sucesso: {possible_file}")
+            log_file = possible_file
+            break
+        except Exception as e:
+            print(f"❌ Não foi possível acessar arquivo de log {possible_file}: {e}")
+else:
+    # Garantir que o diretório do log_file existe
+    try:
+        os.makedirs(os.path.dirname(log_file), exist_ok=True)
+        print(f"Diretório para log_file criado: {os.path.dirname(log_file)}")
+        with open(log_file, 'a') as f:
+            f.write(f"Log inicializado em {datetime.datetime.now()}\n")
+        print(f"✅ Arquivo de log configurado com sucesso: {log_file}")
+    except Exception as e:
+        print(f"❌ Não foi possível acessar o arquivo de log configurado: {e}")
+        # Tentar usar um log alternativo na raiz
+        log_file = "api_logs.log"
+        try:
+            with open(log_file, 'a') as f:
+                f.write(f"Log inicializado em {datetime.datetime.now()} (fallback)\n")
+            print(f"✅ Usando arquivo de log alternativo: {log_file}")
+        except Exception as alt_error:
+            print(f"❌ Todas as tentativas de configuração de log falharam: {alt_error}")
+            print("⚠️ A API continuará executando, mas sem logging em arquivo")
 
-# Tentar criar o arquivo de log
-try:
-    with open(log_file, 'a'):
-        pass
-    print(f"Arquivo de log verificado: {log_file}")
-except Exception as e:
-    print(f"Aviso: Não foi possível acessar o arquivo de log: {e}")
-    # Tentar usar um log alternativo
-    alternative_log = "api_logs.log"
-    print(f"Tentando usar log alternativo: {alternative_log}")
-    log_file = alternative_log
+print(f"LOG_FILE final configurado como: {log_file}")
 
 logging.basicConfig(
     level=logging.INFO,

@@ -45,10 +45,21 @@ export PYTHONHASHSEED=random\n\
 export PYTHONDONTWRITEBYTECODE=1\n\
 export PYTHONUNBUFFERED=1\n\
 # Garantir que diretórios de logs existem e têm permissões adequadas\n\
+echo "Preparando diretórios de logs..."\n\
 mkdir -p /opt/render/project/logs /opt/render/project/metrics /opt/render/project/src/data/logs /opt/render/project/src/logs logs\n\
 chmod -R 777 /opt/render/project/logs /opt/render/project/src/logs /opt/render/project/src/data/logs logs\n\
 touch /opt/render/project/logs/api_logs.log\n\
 chmod 666 /opt/render/project/logs/api_logs.log\n\
+echo "LOG_FILE definido como: $LOG_FILE"\n\
+# Verificar se o diretório do LOG_FILE existe\n\
+LOG_DIR=$(dirname "$LOG_FILE")\n\
+mkdir -p "$LOG_DIR"\n\
+chmod -R 777 "$LOG_DIR"\n\
+touch "$LOG_FILE"\n\
+chmod 666 "$LOG_FILE"\n\
+echo "Teste de escrita em $(date)" >> "$LOG_FILE"\n\
+echo "Verificando escrita em $LOG_FILE:"\n\
+cat "$LOG_FILE"\n\
 # Iniciar API com configurações otimizadas\n\
 gunicorn -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT \
 --timeout 120 --graceful-timeout 60 --keep-alive 5 --max-requests 1000 \
