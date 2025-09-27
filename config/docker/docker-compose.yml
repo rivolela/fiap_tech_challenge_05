@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  scoring-api:
+    build: .
+    ports:
+      - "8000:8000"  # API - porta padrão 8000
+    environment:
+      PORT: "8000"
+      PYTHONPATH: "/opt/render/project/src"
+      API_KEY_SALT: "salt-secreto-desenvolvimento-local"
+      API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
+      RATE_LIMIT_WINDOW: "60"
+      RATE_LIMIT_ADMIN: "100"
+      RATE_LIMIT_READONLY: "30"
+      LOG_LEVEL: "INFO"
+      LOG_FILE: "/opt/render/project/logs/api_logs.log"
+    volumes:
+      - ./logs:/opt/render/project/logs
+      - ./data/monitoring:/opt/render/project/data/monitoring
+      - ./data/processed:/opt/render/project/data/processed
+      - ./data/insights:/opt/render/project/data/insights
+    restart: unless-stopped
+
+  monitoring-dashboard:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dashboard
+    ports:
+      - "8502:8501"  # Mudado para 8502 externamente
+    environment:
+      PYTHONPATH: "/opt/render/project/src"
+      API_KEY_SALT: "salt-secreto-desenvolvimento-local"
+      API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
+      API_URL: "http://scoring-api:8000"
+      API_KEY: "local-api-key"
+    volumes:
+      - ./data/monitoring:/opt/render/project/data/monitoring
+      - ./data/processed:/opt/render/project/data/processed
+      - ./data/insights:/opt/render/project/data/insights
+    depends_on:
+      - scoring-api
+    restart: unless-stopped
+    
+  mlflow-ui:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: mlflow ui --host=0.0.0.0 --port=5000 --backend-store-uri=file:///opt/render/project/src/mlruns
+    ports:
+      - "5001:5000"  # Interface MLflow UI (porta externa mudada para 5001)
+    environment:
+      PYTHONPATH: "/opt/render/project/src"
+    volumes:
+      - ./mlruns:/opt/render/project/src/mlruns
+    depends_on:
+      - scoring-api
+    restart: unless-stopped

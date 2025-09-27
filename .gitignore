@@ -148,6 +148,11 @@ env/
 venv/
 ENV/
 env.bak/
+
+# Log files
+api_logs.log
+logs/*.log
+!logs/.gitkeep
 venv.bak/
 
 # Spyder project settings

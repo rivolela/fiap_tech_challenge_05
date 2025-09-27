@@ -50,13 +50,21 @@ from src.api.preprocessing import preprocess_input, preprocess_batch
 # Verificar a versão do scikit-learn
 check_sklearn_version()
 
+# Carregar variáveis de ambiente
+load_dotenv()
+
 # Configurar logging
+log_file = os.getenv("LOG_FILE", "logs/api_logs.log")
+
+# Garantir que o diretório de logs existe
+os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("api_logs.log")
+        logging.FileHandler(log_file)
     ]
 )
 logger = logging.getLogger("decision-api")

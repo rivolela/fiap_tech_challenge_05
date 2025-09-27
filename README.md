@@ -254,9 +254,9 @@ curl -X POST "http://localhost:8000/score" \
 O projeto pode ser facilmente implantado na plataforma Render usando Docker ou o arquivo de configuração incluído.
 
 #### Opções de Implantação
-1. **Via Blueprint (render.yaml)**: Implantação automática usando nosso arquivo de configuração
-2. **Via Docker**: Implantação manual do contêiner Docker usando o Dockerfile incluído
-3. **Sem Docker**: Implantação usando o ambiente Python do Render e o Procfile
+1. **Via Blueprint (config/render/render.yaml)**: Implantação automática usando nosso arquivo de configuração
+2. **Via Docker**: Implantação manual do contêiner Docker usando o config/docker/api/Dockerfile incluído
+3. **Sem Docker**: Implantação usando o ambiente Python do Render e o config/render/Procfile
 
 ## 📝 Dados
 
@@ -343,9 +343,45 @@ Para mais detalhes sobre esta funcionalidade, consulte a documentação em [docs
 
 Este projeto está sob a licença Apache 2.0. Veja o arquivo [`LICENSE`](LICENSE) para mais detalhes.
 
+## 🧪 Testes Unitários
+
+O projeto conta com testes unitários para garantir a qualidade e o funcionamento correto dos componentes da pipeline. Para executar os testes:
+
+```bash
+# Execute o script de testes
+./scripts/run_tests.sh
+```
+
+Para mais detalhes sobre os testes implementados, consulte o [README dos testes](tests/README.md).
+
 ## 📞 Contato
 
 FIAP Tech Challenge 05 - [@rivolela](https://github.com/rivolela/fiap_tech_challenge_05)
 
 ---
 **Nota**: Certifique-se de que os arquivos JSON estejam disponíveis na pasta `data/` antes de executar o notebook de análise.
+
+
+## Estrutura do Projeto
+## Estrutura do Projeto
+
+```
+fiap_tech_challenge_05/
+├── .github/              # GitHub Actions e templates para issues/PRs
+├── config/               # Arquivos de configuração
+│   ├── docker/           # Arquivos Docker
+│   ├── nginx/            # Configuração Nginx
+│   └── render/           # Configuração da plataforma Render
+├── data/                 # Dados do projeto
+├── docs/                 # Documentação
+├── examples/             # Exemplos de uso
+├── logs/                 # Logs da aplicação
+├── models/               # Modelos treinados
+├── notebooks/            # Jupyter notebooks
+├── scripts/              # Scripts utilitários
+│   ├── deployment/       # Scripts de implantação
+│   ├── monitoring/       # Scripts de monitoramento
+│   └── utils/            # Scripts utilitários diversos
+├── src/                  # Código-fonte principal
+└── tests/                # Testes
+```

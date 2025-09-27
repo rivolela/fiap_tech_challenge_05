@@ -1,0 +1,1 @@
+"""Módulo de testes para o projeto Decision Scoring."""

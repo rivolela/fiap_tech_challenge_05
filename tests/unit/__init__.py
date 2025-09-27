@@ -1,0 +1,1 @@
+"""Testes unitários para o projeto Decision Scoring."""
