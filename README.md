@@ -44,6 +44,7 @@ fiap_tech_challenge_05/
 ├── notebooks/
 │   └── Análise Exploratória dos Dados.ipynb
 │   └── analise_exploratoria.ipynb
+│   └── threshold_adjustment_analysis.ipynb
 ├── data/
 │   ├── raw/
 │   │   ├── applicants.json
@@ -109,6 +110,15 @@ jupyter notebook
 ```
 
 3. Abrir o notebook [`notebooks/Análise Exploratória dos Dados.ipynb`](notebooks/Análise%20Exploratória%20dos%20Dados.ipynb)
+
+## 🛠️ Variáveis de Ambiente
+
+Para configurar a API, você pode usar diversas variáveis de ambiente:
+- `PORT`: Porta onde a API será executada (padrão: 8000)
+- `LOG_LEVEL`: Nível de logging (padrão: INFO)
+- `CLASSIFICATION_THRESHOLD`: Threshold para classificação de candidatos (padrão: 0.25)
+
+Veja a lista completa em [docs/env_variables.md](docs/env_variables.md).
 
 ## 🤖 Sistema Híbrido de Scoring + Clustering
 
@@ -362,26 +372,3 @@ FIAP Tech Challenge 05 - [@rivolela](https://github.com/rivolela/fiap_tech_chall
 **Nota**: Certifique-se de que os arquivos JSON estejam disponíveis na pasta `data/` antes de executar o notebook de análise.
 
 
-## Estrutura do Projeto
-## Estrutura do Projeto
-
-```
-fiap_tech_challenge_05/
-├── .github/              # GitHub Actions e templates para issues/PRs
-├── config/               # Arquivos de configuração
-│   ├── docker/           # Arquivos Docker
-│   ├── nginx/            # Configuração Nginx
-│   └── render/           # Configuração da plataforma Render
-├── data/                 # Dados do projeto
-├── docs/                 # Documentação
-├── examples/             # Exemplos de uso
-├── logs/                 # Logs da aplicação
-├── models/               # Modelos treinados
-├── notebooks/            # Jupyter notebooks
-├── scripts/              # Scripts utilitários
-│   ├── deployment/       # Scripts de implantação
-│   ├── monitoring/       # Scripts de monitoramento
-│   └── utils/            # Scripts utilitários diversos
-├── src/                  # Código-fonte principal
-└── tests/                # Testes
-```

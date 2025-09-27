@@ -193,9 +193,29 @@ def get_feature_list() -> List[str]:
             "tempo_desempregado", "habilidades", "cargo_anterior"]
 
 
+def get_classification_threshold():
+    """
+    Obtém o threshold de classificação a partir da variável de ambiente ou usa o valor padrão.
+    Um threshold mais baixo vai favorecer o recall (identificar mais positivos verdadeiros)
+    mas pode diminuir a precisão.
+    
+    Returns:
+        float: Threshold de classificação entre 0 e 1
+    """
+    try:
+        # Tenta obter o threshold da variável de ambiente
+        threshold = float(os.environ.get("CLASSIFICATION_THRESHOLD", "0.25"))
+        # Garantir que o threshold esteja entre 0 e 1
+        threshold = max(0.01, min(threshold, 0.99))
+        return threshold
+    except (ValueError, TypeError):
+        # Caso ocorra algum erro, retorna o valor padrão ajustado para dados desbalanceados
+        return 0.25
+
 def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
-    Realiza a predição para novos dados
+    Realiza a predição para novos dados com threshold ajustável para melhorar
+    o equilíbrio entre precisão e recall em dados desbalanceados.
     
     Args:
         data: DataFrame com os dados de entrada
@@ -205,6 +225,7 @@ def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> D
         Dicionário com os resultados da predição:
         - prediction: 0 ou 1 (classe prevista)
         - probability: probabilidade da classe positiva
+        - threshold: threshold usado na classificação
         - recommendation: texto com a recomendação baseada na predição
         - comment: comentário personalizado gerado com técnicas de LLM
     """
@@ -212,14 +233,18 @@ def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> D
     
     # Realizar a predição
     try:
-        prediction = int(model.predict(data)[0])
-        
         # Obter a probabilidade (assumindo modelo com predict_proba)
         if hasattr(model, 'predict_proba'):
             probability = float(model.predict_proba(data)[:, 1][0])
         else:
-            # Se o modelo não tiver predict_proba, usar predict como probabilidade
-            probability = float(prediction)
+            # Se o modelo não tiver predict_proba, usar o padrão
+            probability = float(model.predict(data)[0])
+        
+        # Obter threshold configurável
+        threshold = get_classification_threshold()
+        
+        # Fazer classificação com base no threshold ajustado
+        prediction = 1 if probability >= threshold else 0
         
         # Determinar recomendação baseada na predição
         if prediction == 1:
@@ -233,6 +258,7 @@ def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> D
         return {
             "prediction": prediction,
             "probability": probability,
+            "threshold": threshold,
             "recommendation": recommendation,
             "comment": comment
         }

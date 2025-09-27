@@ -30,6 +30,7 @@ ENV PYTHONPATH=/opt/render/project/src
 ENV PORT=8000
 ENV LOG_LEVEL=INFO
 ENV LOG_FILE=/opt/render/project/logs/api_logs.log
+ENV CLASSIFICATION_THRESHOLD=0.25
 
 # Expor a porta para a API e para o dashboard de monitoramento
 EXPOSE 8000 8501
