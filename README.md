@@ -116,7 +116,7 @@ jupyter notebook
 Para configurar a API, você pode usar diversas variáveis de ambiente:
 - `PORT`: Porta onde a API será executada (padrão: 8000)
 - `LOG_LEVEL`: Nível de logging (padrão: INFO)
-- `CLASSIFICATION_THRESHOLD`: Threshold para classificação de candidatos (padrão: 0.25)
+- `CLASSIFICATION_THRESHOLD`: Threshold para classificação de candidatos (padrão: 0.5)
 
 Veja a lista completa em [docs/env_variables.md](docs/env_variables.md).
 

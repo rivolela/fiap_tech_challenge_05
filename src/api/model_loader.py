@@ -204,13 +204,13 @@ def get_classification_threshold():
     """
     try:
         # Tenta obter o threshold da variável de ambiente
-        threshold = float(os.environ.get("CLASSIFICATION_THRESHOLD", "0.25"))
+        threshold = float(os.environ.get("CLASSIFICATION_THRESHOLD", "0.5"))
         # Garantir que o threshold esteja entre 0 e 1
         threshold = max(0.01, min(threshold, 0.99))
         return threshold
     except (ValueError, TypeError):
-        # Caso ocorra algum erro, retorna o valor padrão ajustado para dados desbalanceados
-        return 0.25
+        # Caso ocorra algum erro, retorna o valor padrão
+        return 0.5
 
 def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
@@ -468,7 +468,7 @@ def generate_llm_comment(data: pd.DataFrame, prediction: int, probability: float
             if probability < 0.3:
                 analise += "\nSugerimos avaliar outros candidatos mais alinhados com os requisitos da posição."
             elif probability < 0.5:
-                analise += "\nApesar da recomendação negativa, o candidato possui alguns pontos que podem ser considerados em uma segunda análise, caso não haja outros candidatos adequados."
+                analise += "\nO candidato não é recomendado para esta posição, mas pode ser considerado para outras funções mais alinhadas com seu perfil."
             else:
                 analise += "\nO candidato atende apenas parcialmente aos requisitos, podendo necessitar de treinamento adicional ou supervisão mais próxima."
                 

@@ -15,7 +15,7 @@ services:
       RATE_LIMIT_READONLY: "30"
       LOG_LEVEL: "INFO"
       LOG_FILE: "/opt/render/project/logs/api_logs.log"
-      CLASSIFICATION_THRESHOLD: "0.25"
+      CLASSIFICATION_THRESHOLD: "0.5"
     volumes:
       - ./logs:/opt/render/project/logs
       - ./data/monitoring:/opt/render/project/data/monitoring
