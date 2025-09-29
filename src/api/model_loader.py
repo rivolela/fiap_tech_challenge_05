@@ -217,6 +217,12 @@ def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> D
     Realiza a predição para novos dados com threshold ajustável para melhorar
     o equilíbrio entre precisão e recall em dados desbalanceados.
     
+    NOTA IMPORTANTE: Correção feita em 29/09/2025
+    Corrigido o bug que causava inconsistência entre a probabilidade, 
+    a recomendação e os comentários. Agora candidatos só são recomendados 
+    quando a probabilidade é >= 0.5, independente do threshold de sensibilidade.
+    O threshold de sensibilidade é usado apenas para análises mais detalhadas.
+    
     Args:
         data: DataFrame com os dados de entrada
         vaga_info: Dicionário com informações sobre a vaga (opcional)
@@ -231,7 +237,7 @@ def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> D
     """
     model = load_model()
     
-    # Realizar a predição
+        # Realizar a predição
     try:
         # Obter a probabilidade (assumindo modelo com predict_proba)
         if hasattr(model, 'predict_proba'):
@@ -244,15 +250,14 @@ def predict(data: pd.DataFrame, vaga_info: Optional[Dict[str, Any]] = None) -> D
         threshold = get_classification_threshold()
         
         # Fazer classificação com base no threshold ajustado
-        prediction = 1 if probability >= threshold else 0
-        
-        # Determinar recomendação baseada na predição
-        if prediction == 1:
+        # Correção: se a probabilidade for menor que 0.5, o candidato não deve ser recomendado
+        # independentemente do threshold de sensibilidade
+        if probability >= 0.5:
+            prediction = 1
             recommendation = "Recomendado"
         else:
-            recommendation = "Não recomendado"
-        
-        # Gerar comentário personalizado baseado na predição e nos dados
+            prediction = 0
+            recommendation = "Não recomendado"        # Gerar comentário personalizado baseado na predição e nos dados
         comment = generate_llm_comment(data, prediction, probability, vaga_info)
         
         return {
@@ -441,7 +446,12 @@ def generate_llm_comment(data: pd.DataFrame, prediction: int, probability: float
                 razoes_negativas.append(f"Período de {tempo_desempregado:.1f} anos sem emprego formal na área")
             
             # Construir o texto da análise
-            analise = f"O perfil apresenta {confianca} probabilidade de não atender completamente aos requisitos"
+            analise = f"O perfil apresenta {confianca} probabilidade de "
+            if probability < 0.5:
+                analise += "não atender completamente aos requisitos"
+            else:
+                analise += "atender apenas parcialmente aos requisitos"
+            
             if vaga_titulo:
                 analise += f" da posição de {vaga_titulo}"
             if vaga_area:
@@ -455,10 +465,12 @@ def generate_llm_comment(data: pd.DataFrame, prediction: int, probability: float
                 for razao in razoes_negativas:
                     analise += f"• {razao}\n"
                     
-            if prediction == 0 and probability < 0.3:
+            if probability < 0.3:
                 analise += "\nSugerimos avaliar outros candidatos mais alinhados com os requisitos da posição."
-            elif prediction == 0 and probability >= 0.3:
+            elif probability < 0.5:
                 analise += "\nApesar da recomendação negativa, o candidato possui alguns pontos que podem ser considerados em uma segunda análise, caso não haja outros candidatos adequados."
+            else:
+                analise += "\nO candidato atende apenas parcialmente aos requisitos, podendo necessitar de treinamento adicional ou supervisão mais próxima."
                 
             return analise.strip()
         
