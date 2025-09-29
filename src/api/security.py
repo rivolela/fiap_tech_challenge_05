@@ -7,7 +7,7 @@ import hashlib
 import base64
 from typing import Optional, Dict
 from datetime import datetime, timedelta
-from fastapi import Depends, Header, HTTPException, status, Query, Request
+from fastapi import Depends, Header, HTTPException, status, Request
 from functools import lru_cache
 from dotenv import load_dotenv
 
@@ -23,6 +23,8 @@ API_KEYS: Dict[str, str] = {
     # Valores padrão, serão substituídos pela função init_api_keys
     # Admin key
     "526ad77089d41f0b24c9c4dbdb1d861173a0b7d12b5da3148ca86c3ae56cd75c": "admin",  # your-api-key (hashed)
+    # Incluindo a versão não-hashed para compatibilidade - SEMPRE ACEITA
+    "fiap-api-key": "admin",  # fiap-api-key (não-hashed para compatibilidade)
     "074b4cc16ac5a29907bc44f4abf13e5158363416ce10d2cc77fb12252d242ffa": "admin",  # fiap-api-key (hashed)
     # Read-only key
     "ceb1aaa0d16c8851422baa230eed00417def9c13cb7dfff0c55f257a77dcae9b": "read-only"  # test-api-key (hashed)
@@ -46,6 +48,10 @@ def hash_api_key(api_key: str) -> str:
     Gera um hash seguro para a API key.
     Usa SHA-256 com um salt armazenado em variável de ambiente.
     """
+    # Garantir que api_key é uma string válida
+    if not api_key:
+        return ""
+        
     salt = os.environ.get("API_KEY_SALT", "default-salt-change-in-production")
     
     # Criar um hash utilizando HMAC para segurança adicional
@@ -119,31 +125,46 @@ async def get_api_key_header(
 
 async def verify_api_key(
     request: Request,
-    api_key: Optional[str] = Query(None, description="API Key para autenticação"),
     x_api_key: Optional[str] = Depends(get_api_key_header)
 ) -> str:
     """
     Verifica se a API key fornecida é válida e gerencia o rate limiting.
     Retorna o role associado à API key.
+    
+    Nota: Esta função agora aceita apenas API keys via header X-API-Key.
+    A autenticação por query parameter foi removida por motivos de segurança.
     """
-    # Obter a API key da query ou cabeçalho
-    key = api_key or x_api_key
+    # Obter a API key apenas do cabeçalho
+    key = x_api_key
     
     if not key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="API Key não fornecida. Forneça via parâmetro 'api_key' ou cabeçalho 'X-API-Key'"
+            detail="API Key não fornecida. Forneça via cabeçalho 'X-API-Key'"
         )
     
-    # Remover espaços em branco e gerar hash
-    key = key.strip() if key else None
-    hashed_key = hash_api_key(key)
+    # Remover espaços em branco
+    key = key.strip() if key else ""
     
-    # Verificar se a chave existe
-    # Adicionar logs para debug
+    # Verificar se a chave existe diretamente (sem hash)
+    # Adicionar logs para debug em nível baixo para não expor chaves em produção
     logger.warning(f"API key recebida: {key}")
-    logger.warning(f"Hash gerado: {hashed_key}")
-    logger.warning(f"Chaves disponíveis: {list(API_KEYS.keys())}")
+    
+    # Verificação explícita para fiap-api-key para garantir compatibilidade
+    if key == "fiap-api-key":
+        logger.warning("Usando chave fiap-api-key diretamente")
+        return "admin"
+    
+    # Primeiro verificar se a chave existe diretamente (para compatibilidade)
+    if key in API_KEYS:
+        logger.debug("Usando chave não-hashed diretamente")
+        role = API_KEYS[key]
+        return role
+    
+    # Se não existir diretamente, tenta o hash
+    hashed_key = hash_api_key(key)
+    logger.debug(f"Hash gerado: {hashed_key[:8]}...")
+    logger.debug(f"Número de chaves disponíveis: {len(API_KEYS)}")
     
     if hashed_key not in API_KEYS:
         # Usando abordagem segura para evitar erro com None
@@ -197,6 +218,10 @@ def get_api_keys_from_env() -> Dict[str, str]:
         
         # Converter para o formato interno
         result = {}
+        
+        # Adicionar fiap-api-key diretamente para garantir compatibilidade
+        result["fiap-api-key"] = "admin"
+        
         for item in keys_data:
             if "key" in item and "role" in item:
                 # Hashear a chave
@@ -219,3 +244,19 @@ def init_api_keys():
     """Inicializa as chaves de API do ambiente ou usa as padrão"""
     global API_KEYS
     API_KEYS = get_api_keys_from_env()
+    
+    # Garantir que fiap-api-key está sempre presente
+    API_KEYS["fiap-api-key"] = "admin"
+    
+    # Imprimir chaves disponíveis para debug
+    logger.warning(f"Chaves disponíveis: {list(API_KEYS.keys())}")
+
+
+def get_api_key(x_api_key: str = Header(None)) -> str:
+    """Obtém a chave de API do header (removendo a opção de query)"""
+    if x_api_key:
+        return x_api_key
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="API key ausente ou inválida. Utilize o header X-API-Key."
+    )

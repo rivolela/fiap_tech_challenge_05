@@ -9,7 +9,7 @@ services:
       PORT: "8000"
       PYTHONPATH: "/opt/render/project/src"
       API_KEY_SALT: "salt-secreto-desenvolvimento-local"
-      API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
+      API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "fiap-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
       RATE_LIMIT_WINDOW: "60"
       RATE_LIMIT_ADMIN: "100"
       RATE_LIMIT_READONLY: "30"
@@ -32,7 +32,7 @@ services:
     environment:
       PYTHONPATH: "/opt/render/project/src"
       API_KEY_SALT: "salt-secreto-desenvolvimento-local"
-      API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
+      API_KEYS: '[{"key": "local-api-key", "role": "admin"}, {"key": "fiap-api-key", "role": "admin"}, {"key": "test-api-key", "role": "read-only"}]'
       API_URL: "http://scoring-api:8000"
       API_KEY: "local-api-key"
     volumes:

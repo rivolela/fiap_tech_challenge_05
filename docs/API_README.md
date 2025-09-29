@@ -141,23 +141,20 @@ docker run -p 8000:8000 decision-scoring-api
 
 ## Autenticação
 
-A API utiliza uma autenticação simples via API key. Você pode fornecer a chave de duas maneiras:
+A API utiliza uma autenticação simples via API key. Você deve fornecer a chave usando o cabeçalho HTTP:
 
-### 1. Via Query String (parâmetro na URL)
-
-```
-/predict/?api_key=your-api-key
-```
-
-### 2. Via Cabeçalho HTTP
+### Via Cabeçalho HTTP
 
 ```
-X-API-Key: your-api-key
+X-API-Key: fiap-api-key
 ```
 
 As chaves de API disponíveis para teste são:
-- `your-api-key`: Permissão de administrador (acesso a todas as funcionalidades)
+- `fiap-api-key`: Permissão de administrador (acesso a todas as funcionalidades) - **Recomendada para exemplos**
+- `local-api-key`: Permissão de administrador (configurada no docker-compose)
 - `test-api-key`: Permissão somente leitura (acesso limitado)
+
+> **Importante**: A chave `fiap-api-key` está sempre disponível no sistema e é a preferida para exemplos e testes.
 
 ## Integração com Sistemas Existentes
 
@@ -182,12 +179,6 @@ response = requests.post(
     headers={"X-API-Key": API_KEY},  # Autenticação via cabeçalho
     json=dados_candidato
 )
-
-# Ou, alternativamente, usando query string:
-# response = requests.post(
-#     f"{API_URL}?api_key={API_KEY}",
-#     json=dados_candidato
-# )
 
 if response.status_code == 200:
     resultado = response.json()
@@ -217,14 +208,6 @@ fetch(apiUrl, {
     'X-API-Key': apiKey  // Autenticação via cabeçalho
   },
   body: JSON.stringify(candidateData)
-  
-// Ou, alternativamente, usando query string:
-// fetch(`${apiUrl}?api_key=${apiKey}`, {
-//   method: 'POST',
-//   headers: {
-//     'Content-Type': 'application/json'
-//   },
-//   body: JSON.stringify(candidateData)
 })
 .then(response => response.json())
 .then(data => {

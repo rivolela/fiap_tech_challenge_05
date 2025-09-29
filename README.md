@@ -224,14 +224,18 @@ Consulte a [documentação completa do sistema de monitoramento](docs/monitoring
 
 ### Autenticação
 Todas as requisições devem incluir um cabeçalho `X-API-Key` com uma chave válida:
-- `your-api-key`: Acesso de administrador (todos os endpoints)
+- `fiap-api-key`: Acesso de administrador (todos os endpoints) - Use esta chave para os exemplos
+- `local-api-key`: Acesso de administrador (todos os endpoints) - Configurada no docker-compose
 - `test-api-key`: Acesso somente leitura (endpoints básicos)
+
+> **Nota**: A chave `fiap-api-key` está sempre disponível e é recomendada para os exemplos.
 
 ### Exemplo de Requisição
 ```bash
-curl -X POST "http://localhost:8000/score" \
-  -H "X-API-Key: your-api-key" \
+curl -X POST "http://localhost:8000/predict" \
+  -H "X-API-Key: fiap-api-key" \
   -H "Content-Type: application/json" \
+  -H "accept: application/json" \
   -d '{
     "idade": 28,
     "experiencia": 5,
