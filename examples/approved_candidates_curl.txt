@@ -3,35 +3,40 @@
 
 
 # Exemplo 1 - Contratado pela Decision - SAP BPC - 20191623853
-curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+curl -X POST 'http://localhost:8000/predict' \
   -H 'accept: application/json' \
+  -H 'X-API-Key: fiap-api-key' \
   -H 'Content-Type: application/json' \
   -d '{"idade": 26, "experiencia": 3.9, "educacao": "ensino_superior", "tempo_desempregado": 1.4, "area_formacao": "engenharia", "habilidades": ["comunicação", "trabalho em equipe"], "cargo_anterior": "Especialista de Geral", "salario_anterior": 10026, "anos_estudo": 16, "vaga_id": "1715", "vaga_titulo": "SAP BPC - 20191623853", "vaga_area": "geral", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Contratado pela Decision", "data_candidatura": "09-01-2020", "nome_candidato": "Davi"}}' 
 
 
 # Exemplo 2 - Contratado pela Decision - SAP BW on HANA - 11773311
-curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+curl -X POST 'http://localhost:8000/predict' \
   -H 'accept: application/json' \
+  -H 'X-API-Key: fiap-api-key' \
   -H 'Content-Type: application/json' \
   -d '{"idade": 26, "experiencia": 4.1, "educacao": "ensino_superior", "tempo_desempregado": 1.3, "area_formacao": "geral", "habilidades": ["trabalho em equipe", "comunicação"], "cargo_anterior": "Analista de Geral", "salario_anterior": 15567, "anos_estudo": 16, "vaga_id": "4620", "vaga_titulo": "SAP BW on HANA - 11773311", "vaga_area": "geral", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Contratado pela Decision", "data_candidatura": "23-03-2021", "nome_candidato": "Melissa"}}' 
 
 
 # Exemplo 3 - Contratado pela Decision - Gerente de Projetos SAP
-curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+curl -X POST 'http://localhost:8000/predict' \
   -H 'accept: application/json' \
+  -H 'X-API-Key: fiap-api-key' \
   -H 'Content-Type: application/json' \
   -d '{"idade": 27, "experiencia": 4.1, "educacao": "ensino_superior", "tempo_desempregado": 1.2, "area_formacao": "geral", "habilidades": ["comunicação", "trabalho em equipe"], "cargo_anterior": "Consultor de Geral", "salario_anterior": 14558, "anos_estudo": 16, "vaga_id": "6313", "vaga_titulo": "Gerente de Projetos SAP", "vaga_area": "geral", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Contratado pela Decision", "data_candidatura": "12-08-2021", "nome_candidato": "Valentim"}}' 
 
 
 # Exemplo 4 - Contratado pela Decision - SAP HCM – PL/SR - 20219844236
-curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+curl -X POST 'http://localhost:8000/predict' \
   -H 'accept: application/json' \
+  -H 'X-API-Key: fiap-api-key' \
   -H 'Content-Type: application/json' \
   -d '{"idade": 36, "experiencia": 12.5, "educacao": "pos_graduacao", "tempo_desempregado": 0.8, "area_formacao": "geral", "habilidades": ["comunicação", "trabalho em equipe"], "cargo_anterior": "Analista de Geral", "salario_anterior": 7198, "anos_estudo": 18, "vaga_id": "4298", "vaga_titulo": "SAP HCM – PL/SR - 20219844236", "vaga_area": "geral", "vaga_senioridade": "senior", "extra_data": {"situacao_original": "Contratado pela Decision", "data_candidatura": "17-02-2021", "nome_candidato": "Oliver"}}' 
 
 
 # Exemplo 5 - Contratado pela Decision - Desenvolvedores Web / Java
-curl -X POST 'http://localhost:8000/predict?api_key=fiap-api-key' \
+curl -X POST 'http://localhost:8000/predict' \
   -H 'accept: application/json' \
+  -H 'X-API-Key: fiap-api-key' \
   -H 'Content-Type: application/json' \
   -d '{"idade": 28, "experiencia": 3.4, "educacao": "pos_graduacao", "tempo_desempregado": 0.7, "area_formacao": "tecnologia", "habilidades": ["react", "java", "javascript", "sql", "machine learning", "python"], "cargo_anterior": "Gerente de Tecnologia", "salario_anterior": 8555, "anos_estudo": 18, "vaga_id": "2981", "vaga_titulo": "Desenvolvedores Web / Java", "vaga_area": "tecnologia", "vaga_senioridade": "pleno", "extra_data": {"situacao_original": "Contratado pela Decision", "data_candidatura": "22-09-2020", "nome_candidato": "Noah"}}' 

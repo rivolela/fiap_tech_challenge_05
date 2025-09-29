@@ -284,20 +284,28 @@ def split_data(df, train_features, target='target_sucesso', test_size=0.2, val_s
 
 def balance_training_data(X_train, y_train):
     """
-    Balanceia os dados de treino usando oversampling simples
+    Balanceia os dados de treino usando SMOTE ou oversampling simples como fallback
     """
-    print("⚠️ SMOTE não disponível, usando oversampling simples...")
-    
-    # Identificar classes e suas contagens
-    class_counts = pd.Series(y_train).value_counts()
-    minority_class = class_counts.idxmin()
-    majority_class = class_counts.idxmax()
-    
-    # Separar exemplos por classe
-    minority_indices = np.where(y_train == minority_class)[0]
-    majority_indices = np.where(y_train == majority_class)[0]
-    
-    # Oversample a classe minoritária
+    try:
+        # Tentar usar SMOTE se disponível
+        from imblearn.over_sampling import SMOTE
+        smote = SMOTE(random_state=42)
+        X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
+        print("✅ Dados balanceados usando SMOTE")
+        return X_resampled, y_resampled
+    except ImportError:
+        print("⚠️ SMOTE não disponível, usando oversampling simples...")
+        
+        # Identificar classes e suas contagens
+        class_counts = pd.Series(y_train).value_counts()
+        minority_class = class_counts.idxmin()
+        majority_class = class_counts.idxmax()
+        
+        # Separar exemplos por classe
+        minority_indices = np.where(y_train == minority_class)[0]
+        majority_indices = np.where(y_train == majority_class)[0]
+        
+        # Oversample a classe minoritária
     minority_resampled = np.random.choice(
         minority_indices, 
         size=len(majority_indices), 

@@ -591,12 +591,11 @@ def custom_openapi():
             "de machine learning desenvolvido pela Decision."
             "\n\n"
             "## Autenticação\n"
-            "Esta API requer autenticação via API Key. Você pode fornecer a API Key de duas formas:\n"
-            "1. Via query parameter: `?api_key=your-api-key`\n" 
-            "2. Via HTTP header: `X-API-Key: your-api-key`\n"
+            "Esta API requer autenticação via API Key. Você deve fornecer a API Key apenas através do header HTTP:\n"
+            "- `X-API-Key: fiap-api-key`\n"
             "\n"
             "API Keys disponíveis:\n"
-            "- `your-api-key`: Acesso de administrador (todos os endpoints)\n"
+            "- `fiap-api-key`: Acesso de administrador (todos os endpoints)\n"
             "- `test-api-key`: Acesso somente leitura (endpoints básicos)\n"
             "\n"
             "## Endpoints\n"
@@ -631,6 +630,41 @@ def custom_openapi():
             "description": "Endpoints para monitoramento da API",
         }
     ]
+    
+    # Remover parâmetros de API key via query para todas as rotas
+    if "paths" in openapi_schema:
+        for path in openapi_schema["paths"].values():
+            for operation in path.values():
+                if "parameters" in operation:
+                    # Filtrar e manter apenas os parâmetros que não são 'api_key' na query
+                    operation["parameters"] = [
+                        param for param in operation["parameters"]
+                        if not (param.get("name") == "api_key" and param.get("in") == "query")
+                    ]
+    
+    # Garantir que a descrição na seção info não mencione query parameter
+    if "info" in openapi_schema and "description" in openapi_schema["info"]:
+        current_desc = openapi_schema["info"]["description"]
+        
+        # Substituir qualquer menção à autenticação via query parameter
+        if "Via query parameter" in current_desc or "?api_key=" in current_desc:
+            openapi_schema["info"]["description"] = (
+                "API para predição de sucesso de candidatos usando o modelo de machine learning desenvolvido pela Decision."
+                "\n\n"
+                "## Autenticação\n"
+                "Esta API requer autenticação via API Key. Você deve fornecer a API Key apenas através do header HTTP:\n"
+                "- `X-API-Key: fiap-api-key`\n"
+                "\n"
+                "API Keys disponíveis:\n"
+                "- `fiap-api-key`: Acesso de administrador (todos os endpoints)\n"
+                "- `test-api-key`: Acesso somente leitura (endpoints básicos)\n"
+                "\n"
+                "## Endpoints\n"
+                "- `/predict/`: Predição individual de candidatos\n"
+                "- `/predict/batch/`: Predição em lote para múltiplos candidatos\n"
+                "- `/health/`: Verificação de saúde da API\n"
+                "- `/metrics/`: Métricas de desempenho (requer permissão de admin)\n"
+            )
     
     app.openapi_schema = openapi_schema
     return app.openapi_schema

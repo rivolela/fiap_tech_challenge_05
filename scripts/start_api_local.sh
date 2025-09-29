@@ -15,6 +15,6 @@ fi
 # Iniciar a API com variáveis de ambiente configuradas
 LOG_FILE=logs/api_logs.log \
 CLASSIFICATION_THRESHOLD=0.25 \
-python -m src.api.scoring_api
+python3 -m src.api.scoring_api
 
 # Este script nunca chegará aqui a menos que a API termine

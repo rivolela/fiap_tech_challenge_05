@@ -13,6 +13,7 @@ scikit-learn==1.5.1  # Versão específica para compatibilidade com o modelo sal
 xgboost>=1.7.0
 scipy>=1.10.0
 mlflow>=2.8.0
+imbalanced-learn>=0.11.0  # Para SMOTE e outros algoritmos de balanceamento
 
 # Natural Language Processing
 textblob>=0.17.1
