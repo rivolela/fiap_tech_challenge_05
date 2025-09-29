@@ -1,0 +1,22 @@
+artifact_path: file:///Users/calicojack/Development/4MLET/fiap_tech_challenge_05/mlruns/168739172432417539/models/m-b55f0bd937524d64ba76d80c284796c7/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.0
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.1
+mlflow_version: 3.4.0
+model_id: m-b55f0bd937524d64ba76d80c284796c7
+model_size_bytes: 4344670
+model_uuid: m-b55f0bd937524d64ba76d80c284796c7
+prompts: null
+run_id: fb3cece9a7cd433e9faad5796732c1c0
+utc_time_created: '2025-09-29 11:23:27.966828'

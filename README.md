@@ -172,6 +172,12 @@ Para mais detalhes sobre MLflow, consulte o guia em [docs/mlflow_guide.md](docs/
 
 O projeto inclui uma API para servir o modelo de Machine Learning treinado:
 
+### API em Produção
+A API está disponível em produção no seguinte endereço:
+```
+https://fiap-tech-challenge-05.onrender.com/
+```
+
 ### Executando a API Localmente
 ```bash
 ./scripts/start_api.sh
