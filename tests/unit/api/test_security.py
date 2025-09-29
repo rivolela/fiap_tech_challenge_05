@@ -35,6 +35,7 @@ def mock_api_keys():
         "hashed-readonly-key": "read-only"
     }
 
+@pytest.mark.asyncio
 @patch('src.api.security.hash_api_key')
 @patch('src.api.security.check_rate_limit')
 @patch('src.api.security.API_KEYS')
@@ -58,6 +59,7 @@ async def test_verify_api_key(mock_api_keys, mock_check_rate_limit, mock_hash_ap
     # Verificar se check_rate_limit foi chamado corretamente
     mock_check_rate_limit.assert_called_with("test-api-key", "admin")
 
+@pytest.mark.asyncio
 @patch('src.api.security.hash_api_key')
 @patch('src.api.security.check_rate_limit')
 @patch('src.api.security.API_KEYS')
@@ -78,6 +80,7 @@ async def test_verify_api_key_with_header(mock_api_keys, mock_check_rate_limit, 
     # Verificar se hash_api_key foi chamado com a chave correta
     mock_hash_api_key.assert_called_with("header-api-key")
 
+@pytest.mark.asyncio
 @patch('src.api.security.hash_api_key')
 @patch('src.api.security.API_KEYS')
 async def test_verify_api_key_invalid(mock_api_keys, mock_hash_api_key, mock_request):
@@ -93,6 +96,7 @@ async def test_verify_api_key_invalid(mock_api_keys, mock_hash_api_key, mock_req
     # Verificar se a exceção tem o status code correto
     assert excinfo.value.status_code == 401
 
+@pytest.mark.asyncio
 @patch('src.api.security.hash_api_key')
 @patch('src.api.security.check_rate_limit')
 @patch('src.api.security.API_KEYS')
@@ -111,6 +115,7 @@ async def test_verify_api_key_rate_limit_exceeded(mock_api_keys, mock_check_rate
     # Verificar se a exceção tem o status code correto
     assert excinfo.value.status_code == 429
 
+@pytest.mark.asyncio
 async def test_verify_api_key_no_key(mock_request):
     """Testa a função verify_api_key quando nenhuma chave é fornecida."""
     # Verificar se uma exceção é lançada

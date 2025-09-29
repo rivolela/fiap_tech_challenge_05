@@ -217,7 +217,7 @@ def test_create_train_validation_split(mock_train_test_split, mock_exists, mock_
 def test_generate_feature_analysis(mock_makedirs, mock_savefig, mock_figure, mock_print, mock_exists, mock_read_csv, mock_data):
     """Testa a geração de análise de features."""
     # Configurar mocks
-    mock_exists.return_value = True
+    mock_exists.return_value = False  # Faz com que o código crie o diretório
     df_features, df_target, df_complete = mock_data
     mock_read_csv.side_effect = [df_features, df_target, df_complete]
     
